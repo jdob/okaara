@@ -14,38 +14,38 @@ from optparse import OptionParser
 # -- exceptions ----------------------------------------------------------------------
 
 class InvalidStructure(Exception):
-    '''
+    """
     Indicates the programmer attempted to assemble a CLI with sections/commands that would
     conflict with each other (likely duplicates).
-    '''
+    """
     pass
 
 class CommandUsage(Exception):
-    '''
+    """
     Indicates the command parameters were incorrect. If the usage error was the lack of
     required parameters, all required parameters that were missing can be specified.
 
     @param missing_options: optional list of options that are required but missing
     @type  missing_options: list of L{Option}
-    '''
+    """
     def __init__(self, missing_options=None):
         self.missing_options = missing_options
 
 # -- classes ----------------------------------------------------------------------
 
 class NoCatchErrorParser(OptionParser):
-    '''
+    """
     OptionParser's default behavior for handling errors is to print the output and exit.
     I'd rather go through the rest of the CLI's output methods, so change this behavior to
     throw my exception instead.
-    '''
+    """
     def exit(self, status=0, msg=None):
         raise CommandUsage(None)
 
 class Option():
-    '''
+    """
     Represents an input to a command, either optional or required.
-    '''
+    """
     def __init__(self, name, description, required=True):
         self.name = name
         self.description = description
@@ -55,19 +55,19 @@ class Option():
         return 'Option [%s]' % self.name
 
 class Flag(Option):
-    '''
+    """
     Specific form of an option that does not take a value; it is meant to be either included
     in the command or excluded.
-    '''
+    """
     def __init__(self, name, description):
         Option.__init__(self, name, description, False)
     
 class Command():
-    '''
+    """
     Represents something that should be executed by the CLI. These nodes will be leaves
     in the CLI tree. Each command is tied to a single python method and will invoke that
     method with whatever arguments follow it.
-    '''
+    """
     def __init__(self, name, description, method):
         self.name = name
         self.description = description
@@ -78,14 +78,14 @@ class Command():
         return 'Command [%s]' % self.name
 
     def execute(self, args):
-        '''
+        """
         Executes this command, passing the remaining arguments into OptParse to process.
 
         @param args: any arguments that remained after parsing the command line to determine
                      the command to execute; these are considered arguments to the command's
                      execution itself
         @type  args: list of strings
-        '''
+        """
 
         # Parse the command arguments into a dictionary
         arg_dict = self._parse_arguments(args)
@@ -108,23 +108,23 @@ class Command():
         self.method(**arg_dict)
 
     def add_option(self, option):
-        '''
+        """
         Adds an option that can be specified when executing this command. When executing the
         command, the user specified arguments to the command are parsed according to options
         specified in this fashion.
 
         @param option: option (or flag) to add to the command
         @type  option: L{Option} or L{Flag}
-        '''
+        """
         self.options.append(option)
 
     def _parse_arguments(self, args):
-        '''
+        """
         Parses the arguments passed into this command based on the configured options.
 
         @return: mapping of argument to value
         @rtype:  dict
-        '''
+        """
         parser = NoCatchErrorParser()
 
         for o in self.options:
@@ -139,10 +139,10 @@ class Command():
         return dict(options.__dict__)
             
 class Section():
-    '''
+    """
     Represents a division of commands in the CLI. Sections may contain other sections, which
     creates a string of arguments used to get to a command (think namespaces).
-    '''
+    """
     def __init__(self, name, description):
         self.name = name
         self.description = description
@@ -153,31 +153,31 @@ class Section():
         return 'Section [%s]' % self.name
 
     def add_subsection(self, section):
-        '''
+        """
         Adds another node to the CLI tree. Users will be able to specify the given name when
         specifying this section. Doing so will recurse into the subsection's subtree to
         continue parsing for other subsections or commands.
 
         @param section: section instance to add
         @type  section: L{Section}
-        '''
+        """
         self._verify_new_structure(section.name)
         self.subsections[section.name] = section
 
     def add_command(self, command):
-        '''
+        """
         Adds a command that may be executed in this section (in other words, a leaf in this
         node of the CLI tree). Any arguments that were specified after the path used to
         identify this command will be passed to the command's execution itself.
 
         @param command: command object to add
         @type  command: L{Command}
-        '''
+        """
         self._verify_new_structure(command.name)
         self.commands[command.name] = command
 
     def find_subsection(self, name):
-        '''
+        """
         Returns the subsection of this section with the given name.
 
         @param name: required; name of the subsection to find
@@ -185,14 +185,14 @@ class Section():
 
         @return: section object for the matching subsection if it exists; None otherwise
         @rtype:  L{Section} or None
-        '''
+        """
         if self.subsections.has_key(name):
             return self.subsections[name]
         else:
             return None
 
     def find_command(self, name):
-        '''
+        """
         Returns the command under this section with the given name.
 
         @param name: required; name of the command to find
@@ -200,14 +200,14 @@ class Section():
 
         @return: command object for the matching command if it exists; None otherwise
         @rtype:  L{Command} or None
-        '''
+        """
         if self.commands.has_key(name):
             return self.commands[name]
         else:
             return None
 
     def _verify_new_structure(self, name):
-        '''
+        """
         Integrity check to validate that the CLI has not been configured with an entity
         (subsection or command) with the given name.
 
@@ -215,7 +215,7 @@ class Section():
         @type  name:  string
 
         @raise InvalidStructure: if there is an entity with the given name
-        '''
+        """
         # Make sure there isn't already a subsection with the same name
         if self.subsections.has_key(name):
             raise InvalidStructure()
@@ -225,11 +225,11 @@ class Section():
             raise InvalidStructure()
 
 class Cli():
-    '''
+    """
     Representation of the CLI being created. Coders should create an instance of this class
     as the basis for the CLI. At that point, calling add_* methods will return the nodes/leaves
     of the CLI tree to further manipulate and create the desired CLI hierarchy.
-    '''
+    """
 
     def __init__(self):
         # Hidden, "special" Section that represents the base of the command structure;
@@ -237,25 +237,25 @@ class Cli():
         self.root_section = Section('', '')
 
     def add_section(self, section):
-        '''
+        """
         Adds a new section to the CLI. Users will be able to specify the given name when
         specifying this section. Doing so will recurse into the section's subtree to
         continue parsing for other subsections or commands.
 
         @param section: section instance to add
         @type  section: L{Section}
-        '''
+        """
         self.root_section.add_subsection(section)
 
     def run(self, args):
-        '''
+        """
         Driver for the CLI. The specified arguments will be parsed to determine which command
         to execute, as well as any arguments to that command's execution. After assembling
         the CLI using the add_* calls, this method should be run to do the actual work.
 
         @param args: defines the command being invoked and any arguments to it
         @type  args: list of string
-        '''
+        """
         command_or_section, remaining_args = self._find_closest_match(self.root_section, args)
 
         if command_or_section is None:
@@ -269,7 +269,7 @@ class Cli():
                 self._print_command_usage(command_or_section, missing_required=e.missing_options)
 
     def print_cli_map(self, indent=-4, step=4):
-        '''
+        """
         Prints the structure of the CLI in a tree-like structure to indicate section ownership.
 
         @param indent: number of spaces to indent each section
@@ -277,11 +277,11 @@ class Cli():
 
         @param step: number of spaces to increment the indent on each iteration into a section
         @type  step: int
-        '''
+        """
         self._recursive_print_section(self.root_section, indent=indent, step=step)
 
     def _recursive_print_section(self, base_section, indent=-4, step=4):
-        '''
+        """
         Prints the contents of a section and all of its children (subsections and commands).
 
         @param indent: number of spaces to indent each section
@@ -289,7 +289,7 @@ class Cli():
 
         @param step: number of spaces to increment the indent on each iteration into a section
         @type  step: int        
-        '''
+        """
         # Need a way to not print the root section of the CLI, which doesn't represent
         # an actual user section, so a ghetto check is to make sure the name isn't blank
         if base_section.name != '':
@@ -307,7 +307,7 @@ class Cli():
                 self._recursive_print_section(subsection, indent=(indent + step), step=step)
 
     def _print_section(self, section, indent=0, step=4):
-        '''
+        """
         Prints the direct children of a single section; this call will not recurse into the
         children and print their hierarchy.
 
@@ -319,7 +319,7 @@ class Cli():
 
         @param step: number of spaces to increment the indent on each iteration into a section
         @type  step: int
-        '''
+        """
         if section.name != '':
             print('%s%s' % (' ' * indent, section.description))
         else:
@@ -334,7 +334,7 @@ class Cli():
                 print('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
 
     def _print_command_usage(self, command, missing_required=None, indent=0, step=4):
-        '''
+        """
         Prints the details of a command, including all options that can be specified to it.
 
         @param command: command to print
@@ -349,7 +349,7 @@ class Cli():
 
         @param step: number of spaces to increment the indent the command's options
         @type  step: int
-        '''
+        """
 
         print('%s%s: %s' % (' ' * indent, command.name, command.description))
 
@@ -367,7 +367,7 @@ class Cli():
                 print('%s%s' % (' ' * (indent + step), r.name))
 
     def _find_closest_match(self, base_section, args):
-        '''
+        """
         Searches the CLI structure for the command that matches the path in the given arguments.
         If no command is found,
 
@@ -379,7 +379,7 @@ class Cli():
 
         @return: tuple of the closest matching command or section based on the argument list
         @rtype:  L{Command}, list or L{Section}, list
-        '''
+        """
 
         # If we've recursed so much that we ran out of arguments, we haven't found a command yet,
         # so we return the deepest section we found

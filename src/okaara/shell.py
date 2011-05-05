@@ -7,13 +7,13 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-'''
+"""
 This file was taken from a github project: https://github.com/jdob/mudder
 
 Changes to this file should be avoided and instead made in the RHUI subclasses
 to allow this module to be upgraded as enhancements/fixes are done in the github
 project without losing RHUI specific changes.
-'''
+"""
 
 
 import logging
@@ -26,7 +26,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Shell:
-    '''
+    """
     Represents a single shell interface. A shell constists of one or more screens
     that drive the different sections of the shell. At any given time, only one
     screen is active. Only the active screen's menu will be used when interacting
@@ -35,10 +35,10 @@ class Shell:
 
     This class contains methods screens and actions may use for transitioning
     between screens and interacting with user input.
-    '''
+    """
 
     def __init__(self, prompt=None, auto_render_menu=False, include_long_triggers=True):
-        '''
+        """
         Creates an empty shell. At least one screen must be added to the shell
         before it is used.
 
@@ -54,7 +54,7 @@ class Shell:
                                       be added, if False only single-character triggers
                                       will be added; defaults to True
         @type  include_long_triggers: bool
-        '''
+        """
         self.home_screen = None
         self.current_screen = None
         self.previous_screen = None
@@ -89,13 +89,13 @@ class Shell:
         self.shell_menu_items = {}
 
     def add_screen(self, screen, is_home=False):
-        '''
+        """
         Adds a new screen for the shell. If a screen was previously added with the
         same screen ID, the newly added screen will replace it.
 
         @param screen: describes a screen in the shell; may not be None
         @type  screen: L{Screen}
-        '''
+        """
         if screen is None:
             raise ValueError('screen may not be None')
 
@@ -112,7 +112,7 @@ class Shell:
             self.home_screen = screen
 
     def add_menu_item(self, menu_item):
-        '''
+        """
         Adds a new menu item that will be available anywhere in the shell.
         Each menu item added to this screen must have a unique trigger.
         If a menu item with the same trigger already exists, it will be
@@ -120,7 +120,7 @@ class Shell:
 
         @param menu_item: new item to add to the shell; may not be None
         @type  menu_item: L{MenuItem}
-        '''
+        """
         if menu_item is None:
             raise ValueError('menu_item may not be None')
 
@@ -130,10 +130,10 @@ class Shell:
     # -- user input handling -----------------------------------------------------------------------
 
     def listen(self):
-        '''
+        """
         Starts the loop to listen for user input and handle according to the current
         screen.
-        '''
+        """
 
         running = True
         while running:
@@ -197,14 +197,14 @@ class Shell:
     # -- screen transition calls -------------------------------------------------------------------
 
     def transition(self, to_screen_id):
-        '''
+        """
         Transitions the state of the shell to the identified screen. If no screen
         exists with the given ID, the shell will be transitioned to the home screen.
 
         @param to_screen_id: identifies the screen to change the shell to; may not
                              be None
         @type  to_screen_id: string
-        '''
+        """
         if to_screen_id is None or to_screen_id not in self.screens:
             LOG.error('Attempt to transition to non-existent screen [%s]' % to_screen_id)
             to_screen_id = self.home_screen.id
@@ -213,27 +213,27 @@ class Shell:
         self.current_screen = self.screens[to_screen_id]
 
     def previous(self):
-        '''
+        """
         Transitions the state of the shell to the previous screen. If there is no
         previous screen, the shell will be transitioned to the home screen.
-        '''
+        """
         if self.previous_screen is None:
             self.home()
         else:
             self.transition(self.previous_screen.id)
 
     def home(self):
-        '''
+        """
         Transitions the state of the shell to the home screen.
-        '''
+        """
         self.transition(self.home_screen.id)
 
     # -- display related calls ---------------------------------------------------------------------
 
     def render_menu(self, display_shell_triggers=True):
-        '''
+        """
         Renders the menu for the current screen to the screen.
-        '''
+        """
 
         # Screen menu items
         self.prompt.write('')
@@ -269,9 +269,9 @@ class Shell:
         self.prompt.write('')
 
     def _render_menu_item(self, trigger, description):
-        '''
+        """
         Writes a single menu item to the screen, wrapping appropriately for long triggers
-        '''
+        """
         if len(trigger) < 4:
             self.prompt.write('   %-4s%s' % (trigger, description))
         else:
@@ -279,31 +279,31 @@ class Shell:
             self.prompt.write('       %s' % description)
 
     def _prompt(self):
-        '''
+        """
         Returns the prompt prefix, substituting in any variables that have been defined.
-        '''
+        """
         p = self.prompt_prefix.replace('$s', self.current_screen.id)
         return p
 
     def _clear_screen(self):
-        '''
+        """
         Calls to the command line to clear the console.
-        '''
+        """
         os.system('clear')
 
 class Screen:
-    '''
+    """
     A screen is an individual "section" of a shell. The granularity of its use will
     vary based on the application but can most easily be related to different
     screens in a graphical UI.
-    '''
+    """
 
     def __init__(self, id):
-        '''
+        """
         @param id: uniquely identifies this screen instance in a shell; may not
                    be None
         @type  id: string
-        '''
+        """
         if id is None:
             raise ValueError('id may not be None')
 
@@ -315,7 +315,7 @@ class Screen:
         return 'ID [%s]' % self.id
 
     def add_menu_item(self, menu_item):
-        '''
+        """
         Adds a new menu item that will be available on this screen. Each menu item
         added to this screen must have a unique trigger. If a menu item with
         the same trigger already exists, it will be removed from the menu and
@@ -323,7 +323,7 @@ class Screen:
 
         @param menu_item: new item to add to this screen; may not be None
         @type  menu_item: L{MenuItem}
-        '''
+        """
 
         if menu_item is None:
             raise ValueError('menu_item may not be None')
@@ -335,7 +335,7 @@ class Screen:
             self.ordered_menu_items.append(menu_item)
 
     def item(self, trigger):
-        '''
+        """
         Returns the menu item for the given trigger if one exists; None otherwise.
 
         @param trigger: identifies the menu item being searched for
@@ -343,27 +343,27 @@ class Screen:
 
         @return: menu item for the given trigger if one is found; None otherwise
         @rtype:  L{MenuItem} or None
-        '''
+        """
         return self.menu_items.get(trigger, None)
 
     def items(self):
-        '''
+        """
         Returns a list of menu items in this screen.
 
         @return: list of menu items; empty list if none have been added
         @rtype:  list of L{MenuItem}
-        '''
+        """
         return tuple(self.ordered_menu_items)
 
 def noop():
-    '''
+    """
     Stub method used as the default in menu items to facilitate prototyping of
     the menu without needing to have all the method implementations in place.
-    '''
+    """
     pass
 
 class MenuItem:
-    '''
+    """
     An individual menu item the user can interact with. The shell instance will
     take care of determining which menu item the user has selected and invoking
     its associated function. Any extra arguments input by the user when calling
@@ -372,10 +372,10 @@ class MenuItem:
     The shell reserves certain triggers for general use. Be sure that a menu
     item trigger does not overlap with one of the shell-level triggers defined
     in the shell instance.
-    '''
+    """
 
     def __init__(self, trigger, description, func=noop, *args, **kwargs):
-        '''
+        """
         @param trigger: character or string the user will input to cause the
                         associated function to be invoked; may not be None
         @type  trigger: string
@@ -394,7 +394,7 @@ class MenuItem:
 
         @param kwargs: key word arguments to be passed to the function when it
                        is executed
-        '''
+        """
         if trigger is None:
             raise ValueError('trigger may not be None')
 
