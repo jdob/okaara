@@ -11,7 +11,7 @@
 import logging
 import os
 
-from rhui.common.prompt import Prompt
+from okaara.prompt import Prompt
 
 
 LOG = logging.getLogger(__name__)
@@ -83,6 +83,7 @@ class Shell:
             clear_triggers.append('clear')
 
         self.shell_menu_items = {}
+        self.ordered_menu_items = [] # kinda ghetto, need to replace with ordered dict for menu_items
         self.add_menu_item(MenuItem(home_triggers, 'move to the home screen', self.home))
         self.add_menu_item(MenuItem(previous_triggers, 'move to the previous screen', self.previous))
         self.add_menu_item(MenuItem(help_triggers, 'display help', self.render_menu))
@@ -128,6 +129,9 @@ class Shell:
         # Overwrite the existing menu item with the same trigger if one exists
         for trigger in menu_item.triggers:
             self.shell_menu_items[trigger] = menu_item
+
+        if menu_item not in self.ordered_menu_items:
+            self.ordered_menu_items.append(menu_item)
 
     # -- user input handling -----------------------------------------------------------------------
 
@@ -242,7 +246,7 @@ class Shell:
         # Screen menu items
         self.prompt.write('')
         for item in self.current_screen.items():
-            self._render_menu_item(item.trigger, item.description)
+            self._render_menu_item(', '.join(item.triggers), item.description)
 
         # Shell triggers
         if display_shell_menu:
@@ -252,8 +256,8 @@ class Shell:
             # Shell menu items
             if len(self.shell_menu_items) > 0:
                 self.prompt.write('')
-                for item in self.shell_menu_items.values():
-                    self._render_menu_item(item.trigger, item.description)
+                for item in self.ordered_menu_items:
+                    self._render_menu_item(', '.join(item.triggers), item.description)
             
         self.prompt.write('')
 
