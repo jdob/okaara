@@ -29,6 +29,7 @@ class CommandUsage(Exception):
     @type  missing_options: list of L{Option}
     """
     def __init__(self, missing_options=None):
+        Exception.__init__(self)
         self.missing_options = missing_options
 
 # -- classes ----------------------------------------------------------------------
