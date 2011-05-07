@@ -24,6 +24,12 @@ from rhui.common.prompt import Prompt
 
 LOG = logging.getLogger(__name__)
 
+class Exit(Exception):
+    """
+    May be raised by any menu item function to stop the shell loop.
+    """
+    pass
+
 
 class Shell:
     """
@@ -59,6 +65,7 @@ class Shell:
         self.current_screen = None
         self.previous_screen = None
         self.screens = {}
+        self.auto_render_menu = auto_render_menu
 
         # Set the default prompt prefix to substitute in the current screen ID
         self.prompt_prefix = '($s) => '
@@ -66,27 +73,29 @@ class Shell:
         # Create a default prompt if one was not explicitly specified
         self.prompt = prompt or Prompt()
 
-        self.auto_render_menu = auto_render_menu
-
-        # Set shell-level triggers to defaults; these can be changed before the shell is run
-        self.previous_triggers = ['<']
-        self.home_triggers = ['^']
-        self.quit_triggers = ['q']
-        self.help_triggers = ['?']
-        self.clear_triggers = ['/']
+        # Create the shell-level menu; these can be changed before the shell is run
+        previous_triggers = ['<']
+        home_triggers = ['^']
+        quit_triggers = ['q']
+        help_triggers = ['?']
+        clear_triggers = ['/']
 
         if include_long_triggers:
-            self.home_triggers.append('home')
+            home_triggers.append('home')
             
-            self.quit_triggers.append('quit')
-            self.quit_triggers.append('exit')
+            quit_triggers.append('quit')
+            quit_triggers.append('exit')
 
-            self.help_triggers.append('help')
+            help_triggers.append('help')
 
-            self.clear_triggers.append('clear')
+            clear_triggers.append('clear')
 
-        # Holds a list of custom menu items that belong to the shell itself, not a screen
         self.shell_menu_items = {}
+        self.add_menu_item(MenuItem(home_triggers, 'move to the home screen', self.home))
+        self.add_menu_item(MenuItem(previous_triggers, 'move to the previous screen', self.previous))
+        self.add_menu_item(MenuItem(help_triggers, 'display help', self.render_menu))
+        self.add_menu_item(MenuItem(clear_triggers, 'clears the screen', self.clear_screen))
+        self.add_menu_item(MenuItem(quit_triggers, 'exit', self.stop))
 
     def add_screen(self, screen, is_home=False):
         """
@@ -125,11 +134,12 @@ class Shell:
             raise ValueError('menu_item may not be None')
 
         # Overwrite the existing menu item with the same trigger if one exists
-        self.shell_menu_items[menu_item.trigger] = menu_item
+        for trigger in menu_item.triggers:
+            self.shell_menu_items[trigger] = menu_item
 
     # -- user input handling -----------------------------------------------------------------------
 
-    def listen(self):
+    def start(self):
         """
         Starts the loop to listen for user input and handle according to the current
         screen.
@@ -140,7 +150,7 @@ class Shell:
 
             # Read the next input from the user
             try:
-                input = self.prompt.prompt(self._prompt())
+                input = self.prompt.prompt(self._prompt_prefix())
             except (EOFError, KeyboardInterrupt):
                 self.prompt.write('\n')
                 return
@@ -151,26 +161,6 @@ class Shell:
 
             trigger = input.split()[0]
             command_args = input.split()[1:]
-
-            # Shell triggers
-            if trigger in self.previous_triggers:
-                self.previous()
-                continue
-
-            if trigger in self.home_triggers:
-                self.home()
-                continue
-
-            if trigger in self.help_triggers:
-                self.render_menu()
-                continue
-
-            if trigger in self.clear_triggers:
-                self._clear_screen()
-                continue
-
-            if trigger in self.quit_triggers:
-                break
 
             # Search the shell for the menu item first
             item = None
@@ -184,16 +174,32 @@ class Shell:
                     self.prompt.write('Invalid menu item; type "?" for a list of available commands')
                     continue
 
-            # Call the function for the menu item if one was found (won't be in the
-            # case of a trigger)
-            if item is not None:
+            # Call the function for the menu item if one was found
+            try:
                 args = item.args + tuple(command_args)
-                item.func(*args, **item.kwargs)
+                self.execute(item.func, *args, **item.kwargs)
+            except Exit:
+                break
 
-                # If the menu is set to auto-render, render it before moving on
-                if self.auto_render_menu:
-                    self.render_menu()
-            
+            # If the menu is set to auto-render, render it before moving on
+            if self.auto_render_menu:
+                self.render_menu()
+
+    def stop(self):
+        """
+        Causes the shell to stop listening for user commands.
+        """
+        raise Exit()
+
+    def execute(self, func, *args, **kwargs):
+        """
+        Executes a function selected by the user from a menu item. This
+        call may raise Exit in order to quit the shell.
+
+        Subclasses should override this method to inject pre-run and post-run functionality.
+        """
+        func(*args, **kwargs)
+
     # -- screen transition calls -------------------------------------------------------------------
 
     def transition(self, to_screen_id):
@@ -230,7 +236,13 @@ class Shell:
 
     # -- display related calls ---------------------------------------------------------------------
 
-    def render_menu(self, display_shell_triggers=True):
+    def clear_screen(self):
+        """
+        Calls to the command line to clear the console.
+        """
+        os.system('clear')
+
+    def render_menu(self, display_shell_menu=True):
         """
         Renders the menu for the current screen to the screen.
         """
@@ -241,7 +253,9 @@ class Shell:
             self._render_menu_item(item.trigger, item.description)
 
         # Shell triggers
-        if display_shell_triggers:
+        if display_shell_menu:
+
+            self.prompt.write('')
 
             # Shell menu items
             if len(self.shell_menu_items) > 0:
@@ -249,23 +263,6 @@ class Shell:
                 for item in self.shell_menu_items.values():
                     self._render_menu_item(item.trigger, item.description)
             
-            self.prompt.write('')
-
-            if len(self.previous_triggers) > 0:
-                self._render_menu_item(', '.join(self.previous_triggers), 'move to the previous screen')
-
-            if len(self.home_triggers) > 0:
-                self._render_menu_item(', '.join(self.home_triggers), 'move to the home screen')
-
-            if len(self.clear_triggers) > 0:
-                self._render_menu_item(', '.join(self.clear_triggers), 'clears the screen')
-
-            if len(self.help_triggers) > 0:
-                self._render_menu_item(', '.join(self.help_triggers), 'display help')
-
-            if len(self.quit_triggers) > 0:
-                self._render_menu_item(', '.join(self.quit_triggers), 'exit')
-
         self.prompt.write('')
 
     def _render_menu_item(self, trigger, description):
@@ -278,18 +275,13 @@ class Shell:
             self.prompt.write('   %s' % trigger)
             self.prompt.write('       %s' % description)
 
-    def _prompt(self):
+    def _prompt_prefix(self):
         """
         Returns the prompt prefix, substituting in any variables that have been defined.
         """
         p = self.prompt_prefix.replace('$s', self.current_screen.id)
         return p
 
-    def _clear_screen(self):
-        """
-        Calls to the command line to clear the console.
-        """
-        os.system('clear')
 
 class Screen:
     """
@@ -329,7 +321,8 @@ class Screen:
             raise ValueError('menu_item may not be None')
 
         # Overwrite the existing menu item with the same trigger if one exists
-        self.menu_items[menu_item.trigger] = menu_item
+        for trigger in menu_item.triggers:
+            self.menu_items[trigger] = menu_item
 
         if menu_item not in self.ordered_menu_items:
             self.ordered_menu_items.append(menu_item)
@@ -344,7 +337,7 @@ class Screen:
         @return: menu item for the given trigger if one is found; None otherwise
         @rtype:  L{MenuItem} or None
         """
-        return self.menu_items.get(trigger, None)
+        return self.menu_items.get(trigger)
 
     def items(self):
         """
@@ -354,6 +347,7 @@ class Screen:
         @rtype:  list of L{MenuItem}
         """
         return tuple(self.ordered_menu_items)
+
 
 def noop():
     """
@@ -374,11 +368,12 @@ class MenuItem:
     in the shell instance.
     """
 
-    def __init__(self, trigger, description, func=noop, *args, **kwargs):
+    def __init__(self, triggers, description, func=noop, *args, **kwargs):
         """
-        @param trigger: character or string the user will input to cause the
-                        associated function to be invoked; may not be None
-        @type  trigger: string
+        @param triggers: character or string (or list of them) the user will
+                         input to cause the associated function to be invoked;
+                         may not be None
+        @type  triggers: str or list
 
         @param description: short (1-2 line) description of what the menu item
                             does; displayed
@@ -395,20 +390,24 @@ class MenuItem:
         @param kwargs: key word arguments to be passed to the function when it
                        is executed
         """
-        if trigger is None:
+        if triggers is None:
             raise ValueError('trigger may not be None')
 
         if func is None:
             raise ValueError('func may not be None')
 
-        self.trigger = trigger
+        # Make sure it's in list form
+        if not isinstance(triggers, list) and not isinstance(triggers, tuple):
+            triggers = [triggers]
+        
+        self.triggers = triggers
         self.description = description
         self.func = func
         self.args = args
         self.kwargs = kwargs
 
     def __str__(self):
-        return 'Trigger: [%s], Description [%s], Function: [%s]' % (self.trigger, self.description, self.func.__name__)
+        return 'Trigger: [%s], Description [%s], Function: [%s]' % (', '.join(self.triggers), self.description, self.func.__name__)
 
     def __eq__(self, other):
-        return self.trigger == other.trigger
+        return self.triggers == other.triggers
