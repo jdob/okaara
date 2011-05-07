@@ -177,7 +177,7 @@ class Prompt:
         """
         selected_indices = []
 
-        q = 'Enter value from (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ' % len(menu_values)
+        q = 'Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ' % len(menu_values)
 
         while True:
             self.write(question)
@@ -290,7 +290,7 @@ class Prompt:
 
         total_item_count = reduce(lambda count, key: count + len(section_items[key]), section_items.keys(), 0)
 
-        q = 'Enter value from (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ' % total_item_count
+        q = 'Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ' % total_item_count
 
         while True:
             self.write(question)
@@ -390,7 +390,7 @@ class Prompt:
         for index, value in enumerate(menu_values):
             self.write('  %-2d - %s' % (index + 1, value))
 
-        q = 'Enter value from (1-%d) or \'b\' to abort: ' % len(menu_values)
+        q = 'Enter value (1-%d) or \'b\' to abort: ' % len(menu_values)
 
         while True:
             selection = self.prompt(q, interruptable=interruptable)
@@ -445,7 +445,7 @@ class Prompt:
                               normal
         @type  interruptable: bool
 
-        @return: non-None answer to the given question
+        @return: answer to the given question or ABORT if it was interrupted
         """
         answer = None
         while answer is None or answer.strip() == '':

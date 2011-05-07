@@ -10,8 +10,18 @@
 
 import unittest
 
-from okaara.prompt import ScriptedPrompt
+from okaara.prompt import Prompt, ScriptedPrompt, ABORT
 
+
+# -- mocks --------------------------------------------------------------------
+
+class InterruptingPrompt(Prompt):
+
+    def read(self, prompt):
+        raise KeyboardInterrupt()
+
+
+# -- test cases ---------------------------------------------------------------
 
 class PromptTest(unittest.TestCase):
 
@@ -49,4 +59,48 @@ class PromptTest(unittest.TestCase):
         # Verify
         self.assertEqual(1, len(prompt.read_values))
         self.assertEqual('', entered)
+
+    def test_prompt_interruptable(self):
+        """
+        Tests that interrupting the prompt when allowed does not throw an exception.
+        """
+
+        # Setup
+        prompt = InterruptingPrompt()
+
+        # Test
+        entered = prompt.prompt('Question', interruptable=True)
+
+        # Verify
+        self.assertEqual(ABORT, entered)
+
+    def test_prompt_non_interruptable(self):
+        """
+        Tests that a non-interruptable prompt properly raises an exception if interrupted.
+        """
+
+        # Setup
+        prompt = InterruptingPrompt()
+
+        # Test
+        self.assertRaises(KeyboardInterrupt, prompt.prompt, 'Question')
+
+    def test_prompt_menu(self):
+        """
+        Basic tests for prompting a menu of items and selecting a valid one.
+        """
+
+        # Setup
+        prompt = ScriptedPrompt()
+        prompt.read_values.append('1')
+        prompt.read_values.append('2')
+
+        items = ['a', 'b', 'c']
+
+        # Test
+        index = prompt.prompt_menu('Question', items)
+
+        # Verify
+        self.assertEqual(0, index)
+        self.assertEqual(1, len(prompt.read_values))
         
