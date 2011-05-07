@@ -399,7 +399,7 @@ class MenuItem:
         self.kwargs = kwargs
 
     def __str__(self):
-        return 'Trigger: [%s], Description [%s], Function: [%s]' % (', '.join(self.triggers), self.description, self.func.__name__)
+        return 'Triggers: [%s], Description [%s], Function: [%s]' % (', '.join(self.triggers), self.description, self.func.__name__)
 
     def __eq__(self, other):
         return self.triggers == other.triggers
