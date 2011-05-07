@@ -7,14 +7,6 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-"""
-This file was taken from a github project: https://github.com/jdob/mudder
-
-Changes to this file should be avoided and instead made in the RHUI subclasses
-to allow this module to be upgraded as enhancements/fixes are done in the github
-project without losing RHUI specific changes.
-"""
-
 
 import logging
 import os
