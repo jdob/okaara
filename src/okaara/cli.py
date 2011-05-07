@@ -41,7 +41,7 @@ class NoCatchErrorParser(OptionParser):
     throw my exception instead.
     """
     def exit(self, status=0, msg=None):
-        raise CommandUsage(None)
+        raise CommandUsage()
 
 class Option():
     """
@@ -232,7 +232,9 @@ class Cli():
     of the CLI tree to further manipulate and create the desired CLI hierarchy.
     """
 
-    def __init__(self):
+    def __init__(self, prompt):
+        self.prompt = prompt
+
         # Hidden, "special" Section that represents the base of the command structure;
         # this simplifies calls into the recursive methods
         self.root_section = Section('', '')
@@ -294,14 +296,14 @@ class Cli():
         # Need a way to not print the root section of the CLI, which doesn't represent
         # an actual user section, so a ghetto check is to make sure the name isn't blank
         if base_section.name != '':
-            print('%s%s: %s' % (' ' * indent, base_section.name, base_section.description))
+            self.prompt.write('%s%s: %s' % (' ' * indent, base_section.name, base_section.description))
 
         if len(base_section.commands) > 0:
             for command in sorted(base_section.commands.values()):
-                print('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
+                self.prompt.write('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
                 if len(command.options) > 0:
                     for o in command.options:
-                        print('%s%s - %s' % (' ' * (indent + (step * 2)), o.name, o.description))
+                        self.prompt.write('%s%s - %s' % (' ' * (indent + (step * 2)), o.name, o.description))
 
         if len(base_section.subsections) > 0:
             for subsection in sorted(base_section.subsections.values()):
@@ -322,17 +324,17 @@ class Cli():
         @type  step: int
         """
         if section.name != '':
-            print('%s%s' % (' ' * indent, section.description))
+            self.prompt.write('%s%s' % (' ' * indent, section.description))
         else:
-            print('Usage:')
+            self.prompt.write('Usage:')
 
         if len(section.commands) > 0:
             for command in sorted(section.commands.values()):
-                print('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
+                self.prompt.write('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
 
         if len(section.subsections) > 0:
             for subsection in sorted(section.subsections.values()):
-                print('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
+                self.prompt.write('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
 
     def _print_command_usage(self, command, missing_required=None, indent=0, step=4):
         """
@@ -352,20 +354,20 @@ class Cli():
         @type  step: int
         """
 
-        print('%s%s: %s' % (' ' * indent, command.name, command.description))
+        self.prompt.write('%s%s: %s' % (' ' * indent, command.name, command.description))
 
         if len(command.options) > 0:
             for o in command.options:
                 if o.required:
-                    print('%s%s - %s (required)' % (' ' * (indent + step), o.name, o.description))
+                    self.prompt.write('%s%s - %s (required)' % (' ' * (indent + step), o.name, o.description))
                 else:
-                    print('%s%s - %s' % (' ' * (indent + step), o.name, o.description))
+                    self.prompt.write('%s%s - %s' % (' ' * (indent + step), o.name, o.description))
 
         if missing_required:
-            print('')
-            print('The following options are required but were not specified:')
+            self.prompt.write('')
+            self.prompt.write('The following options are required but were not specified:')
             for r in missing_required:
-                print('%s%s' % (' ' * (indent + step), r.name))
+                self.prompt.write('%s%s' % (' ' * (indent + step), r.name))
 
     def _find_closest_match(self, base_section, args):
         """
