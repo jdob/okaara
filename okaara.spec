@@ -3,7 +3,7 @@
 # -- header -----------------------------------------------------------------------
 
 Name:		    okaara-lib
-Version:        1.0.0
+Version:        1.0.1
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
 
@@ -62,3 +62,6 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog -------------------------------------------------------------------
 
 %changelog
+* Sat May 07 2011 Jay Dobies <jason.dobies@redhat.com> 1.0.1-1
+- First revision
+
