@@ -57,7 +57,8 @@ class Prompt:
     sources. By default, stdin and stdout will be used.
     """
 
-    def __init__(self, input=sys.stdin, output=sys.stdout, normal_color=COLOR_WHITE):
+    def __init__(self, input=sys.stdin, output=sys.stdout, normal_color=COLOR_WHITE,
+                 wrap_width=None):
         """
         Creates a new instance that will read and write to the given streams.
 
@@ -70,10 +71,15 @@ class Prompt:
         @param normal_color: color of the text to write; this will be used in the color
                              function to reset the text after coloring it
         @type  normal_color: str (one of the COLOR_* variables in this module)
+
+        @param wrap_width: if specified, content written by this prompt will
+                           automatically be wrapped to this width
+        @type  wrap_width: int or None
         """
         self.input = input
         self.output = output
         self.normal_color = normal_color
+        self.wrap_width = wrap_width
 
         # Initialize the screen with the normal color
         self.write(self.normal_color, new_line=False)
@@ -504,7 +510,10 @@ class Prompt:
         @param content: content to display to the user
         @type  content: string
         """
+        content = self._chop(content, self.wrap_width)
+
         if new_line: content += '\n'
+        
         self.output.write(content)
 
     def color(self, text, color):
@@ -523,7 +532,28 @@ class Prompt:
         @rtype:  str
         """
         return color + text + self.normal_color
-        
+
+    def _chop(self, content, wrap_width):
+        """
+        If the wrap_width is specified, this call will introduce \n characters
+        to maintain that width.
+        """
+        if wrap_width is None:
+            return content
+
+        wrapped_content = ''
+        remainder = content[:]
+        while True:
+            chopped = remainder[:wrap_width]
+            remainder = remainder[wrap_width:]
+
+            wrapped_content += chopped
+
+            if len(remainder) == 0:
+                return wrapped_content
+            else:
+                wrapped_content += '\n'
+
     def _is_range(self, input, selectable_item_count):
         """
         @return: True if the input represents a range in a multiselect menu,

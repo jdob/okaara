@@ -103,4 +103,52 @@ class PromptTest(unittest.TestCase):
         # Verify
         self.assertEqual(0, index)
         self.assertEqual(1, len(prompt.read_values))
+
+    def test_chop_short_wrap(self):
+        """
+        Tests that chop correctly handled data longer than the chop length.
+        """
+
+        # Setup
+        prompt = ScriptedPrompt()
+
+        # Test
+        wrapped = prompt._chop('Spiderman', 3)
+
+        # Verify
+        pieces = wrapped.split('\n')
+
+        self.assertEqual(3, len(pieces))
+
+    def test_chop_long_wrap(self):
+        """
+        Tests that chop correctly handles data shorter than the chop length.
+        """
+
+        # Setup
+        prompt = ScriptedPrompt()
+
+        # Test
+        wrapped = prompt._chop('Green Goblin', 100)
+
+        # Verify
+        pieces = wrapped.split('\n')
+
+        self.assertEqual(1, len(pieces))
+
+    def test_chop_with_none(self):
+        """
+        Tests that chop with a None wrap width doesn't crash.
+        """
+
+        # Setup
+        prompt = ScriptedPrompt()
+
+        # Test
+        wrapped = prompt._chop('Electro', None)
+
+        # Verify
+        pieces = wrapped.split('\n')
+
+        self.assertEqual(1, len(pieces))
         
