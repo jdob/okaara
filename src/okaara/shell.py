@@ -10,6 +10,7 @@
 
 import logging
 import os
+import sys
 
 from okaara.prompt import Prompt
 
@@ -135,11 +136,17 @@ class Shell:
 
     # -- user input handling -----------------------------------------------------------------------
 
-    def start(self):
+    def start(self, show_menu=True, clear=True):
         """
         Starts the loop to listen for user input and handle according to the current
         screen.
         """
+
+        if clear:
+            self.clear_screen()
+
+        if show_menu:
+            self.render_menu()
 
         running = True
         while running:
@@ -181,6 +188,25 @@ class Shell:
             if self.auto_render_menu:
                 self.render_menu()
 
+    def safe_start(self, show_menu=True, clear=True):
+        """
+        Launches the shell in an exception block to catch all unexpected exceptions
+        to prevent the entire thing from crashing. If an exception is caught, the
+        start loop will be restarted.
+        """
+
+        try:
+            self.start(show_menu=show_menu, clear=clear)
+        except SystemExit:
+            sys.exit(0)
+        except:
+            LOG.exception('Unexpected error caught at the shell level')
+            self.prompt.write('')
+            self.prompt.write('An unexpected error has occurred during the last operation.')
+            self.prompt.write('More information can be found in the log.')
+            self.prompt.write('')
+            self.safe_start(show_menu=False, clear=False)
+
     def stop(self):
         """
         Causes the shell to stop listening for user commands.
@@ -198,7 +224,7 @@ class Shell:
 
     # -- screen transition calls -------------------------------------------------------------------
 
-    def transition(self, to_screen_id):
+    def transition(self, to_screen_id, show_menu=False, clear=False):
         """
         Transitions the state of the shell to the identified screen. If no screen
         exists with the given ID, the shell will be transitioned to the home screen.
@@ -206,13 +232,27 @@ class Shell:
         @param to_screen_id: identifies the screen to change the shell to; may not
                              be None
         @type  to_screen_id: string
+
+        @param show_menu: if True, the menu for the newly transitioned to screen
+                          will be displayed
+        @type  show_menu: bool
+
+        @param clear: if True, the screen will be cleared before the transition is made
+        @type  clear: bool
         """
+
         if to_screen_id is None or to_screen_id not in self.screens:
             LOG.error('Attempt to transition to non-existent screen [%s]' % to_screen_id)
             to_screen_id = self.home_screen.id
 
+        if clear:
+            self.clear_screen()
+                    
         self.previous_screen = self.current_screen
         self.current_screen = self.screens[to_screen_id]
+        
+        if show_menu:
+            self.render_menu(display_shell_menu=False)
 
     def previous(self):
         """
