@@ -533,6 +533,28 @@ class Prompt:
         """
         return color + text + self.normal_color
 
+    def center(self, text, width=None):
+        """
+        Centers the given text. Nothing is output to the screen; the formatted string
+        is returned.
+
+        @param text: text to center
+        @type  text: str
+
+        @param width: width to center the text between; if None the wrap_width value
+                      will be used
+        @type  width: int
+        """
+
+        if width is None:
+            width = self.wrap_width
+
+        if len(text) >= width:
+            return text
+        else:
+            spacer = ' ' * ( (width - len(text)) / 2)
+            return spacer + text
+    
     def _chop(self, content, wrap_width):
         """
         If the wrap_width is specified, this call will introduce \n characters
