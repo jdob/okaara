@@ -84,7 +84,7 @@ class Prompt:
         # Initialize the screen with the normal color
         self.write(self.normal_color, new_line=False)
 
-    def prompt_file(self, question, allow_directory=False, allow_empty=False, interruptable=False):
+    def prompt_file(self, question, allow_directory=False, allow_empty=False, interruptable=True):
         """
         Prompts the user for the full path to a file, reprompting if the file does not
         exist. If allow_empty is specified, the validation will only be performed if the
@@ -101,7 +101,7 @@ class Prompt:
             self.write('')
             return self.prompt_file(question)
 
-    def prompt_values(self, question, values, interruptable=False):
+    def prompt_values(self, question, values, interruptable=True):
         """
         Prompts the user for the answer to a question where only an enumerated set of values
         should be accepted.
@@ -118,7 +118,7 @@ class Prompt:
 
         return a
 
-    def prompt_y_n(self, question, interruptable=False):
+    def prompt_y_n(self, question, interruptable=True):
         """
         Prompts the user for the answer to a yes/no question, assuming the value 'y' for yes and
         'n' for no. If neither is entered, the user will be re-prompted until one of the two is
@@ -136,7 +136,7 @@ class Prompt:
             
         return a.lower() == 'y'
 
-    def prompt_range(self, question, high_number, low_number=1, interruptable=False):
+    def prompt_range(self, question, high_number, low_number=1, interruptable=True):
         """
         Prompts the user to enter a number between the given range. If the input is invalid, the
         user wil be re-prompted until a valid number is provided.
@@ -150,7 +150,7 @@ class Prompt:
                 
             return a
 
-    def prompt_number(self, question, allow_negatives=False, allow_zero=False, default_value=None, interruptable=False):
+    def prompt_number(self, question, allow_negatives=False, allow_zero=False, default_value=None, interruptable=True):
         """
         Prompts the user for a numerical input. If the given value does not represent a number,
         the user will be re-prompted until a valid number is provided.
@@ -180,7 +180,7 @@ class Prompt:
 
             return i
 
-    def prompt_default(self, question, default_value, interruptable=False):
+    def prompt_default(self, question, default_value, interruptable=True):
         """
         Prompts the user for an answer to the given question. If the user does not enter a value,
         the default will be returned.
@@ -195,7 +195,7 @@ class Prompt:
         else:
             return answer
 
-    def prompt_multiselect_menu(self, question, menu_values, interruptable=False):
+    def prompt_multiselect_menu(self, question, menu_values, interruptable=True):
         """
         Displays a list of items, allowing the user to select 1 or more items before continuing.
         The items selected by the user are returned.
@@ -260,7 +260,7 @@ class Prompt:
                 else:
                     selected_indices.append(value_index)
 
-    def prompt_multiselect_sectioned_menu(self, question, section_items, section_post_text=None, interruptable=False):
+    def prompt_multiselect_sectioned_menu(self, question, section_items, section_post_text=None, interruptable=True):
         """
         Displays a multiselect menu for the user where the items are broken up by section,
         however the numbering is consecutive to provide unique indices for the user to use
@@ -398,7 +398,7 @@ class Prompt:
                 else:
                     selected_index_map[section_key].append(section_index)
 
-    def prompt_menu(self, question, menu_values, interruptable=False):
+    def prompt_menu(self, question, menu_values, interruptable=True):
         """
         Displays a list of items, allowing the user to select a single item in the
         list. The selected value is returned.
@@ -458,7 +458,7 @@ class Prompt:
             else:
                 return password_1
 
-    def prompt(self, question, allow_empty=False, interruptable=False):
+    def prompt(self, question, allow_empty=False, interruptable=True):
         """
         Prompts the user for an answer to the given question, re-prompting if the answer is
         blank.
