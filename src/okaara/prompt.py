@@ -58,7 +58,7 @@ class Prompt:
     """
 
     def __init__(self, input=sys.stdin, output=sys.stdout, normal_color=COLOR_WHITE,
-                 wrap_width=None):
+                 enable_color=True, wrap_width=None):
         """
         Creates a new instance that will read and write to the given streams.
 
@@ -72,6 +72,11 @@ class Prompt:
                              function to reset the text after coloring it
         @type  normal_color: str (one of the COLOR_* variables in this module)
 
+        @param enable_color: determines if this prompt instance will output any modified
+                             colors; if this is false the color() method will
+                             always render the text as the normal_color
+        @type  enable_color: bool
+
         @param wrap_width: if specified, content written by this prompt will
                            automatically be wrapped to this width
         @type  wrap_width: int or None
@@ -79,6 +84,7 @@ class Prompt:
         self.input = input
         self.output = output
         self.normal_color = normal_color
+        self.enable_color = enable_color
         self.wrap_width = wrap_width
 
         # Initialize the screen with the normal color
@@ -531,6 +537,11 @@ class Prompt:
         @return: new string with the proper color escape sequences in place
         @rtype:  str
         """
+
+        # Handle if color is disabled at the instance level
+        if not self.enable_color:
+            color = self.normal_color
+
         return color + text + self.normal_color
 
     def center(self, text, width=None):
@@ -571,7 +582,7 @@ class Prompt:
 
             wrapped_content += chopped
 
-            if len(remainder) == 0:
+            if len(remainder) is 0:
                 return wrapped_content
             else:
                 wrapped_content += '\n'
@@ -616,6 +627,8 @@ class ScriptedPrompt(Prompt):
         """
         Initializes with an empty list of return prompt read results.
         """
+        Prompt.__init__(self)
+
         self.read_values = []
         self.write_values = []
 
