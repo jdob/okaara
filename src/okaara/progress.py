@@ -9,6 +9,8 @@
 
 import math
 
+import okaara.prompt
+
 class ProgressBar:
 
     def __init__(self, prompt, width=40, show_trailing_percentage=False, fill='=', left_tick='[', right_tick=']'):
@@ -44,7 +46,7 @@ class ProgressBar:
         self.left_tick = left_tick
         self.right_tick = right_tick
 
-        self.position_saved = False
+        self.previous_lines_written = 0
 
     def render(self, step, total, message=None):
         """
@@ -56,11 +58,9 @@ class ProgressBar:
         used to provide more information on the current step being rendered.
         """
 
-        if self.position_saved:
-            self.prompt.reset_position()
-
-        self.prompt.save_position()
-        self.position_saved = True
+        if self.previous_lines_written > 0:
+            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
+            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
 
         # Generate bar
         total_fill_width = self.width - (len(self.left_tick) + len(self.right_tick)) # subtract the leading/trailing ticks
@@ -79,6 +79,12 @@ class ProgressBar:
         if message is not None:
             self.prompt.write(message)
 
+        # Save the number of lines written for the next iteration
+        message_lines = 0
+        if message is not None:
+            message_lines = len(message.split('\n'))
+
+        self.previous_lines_written = 1 + message_lines
 
 class Spinner:
 
@@ -106,14 +112,15 @@ class Spinner:
         self.right_tick = right_tick
 
         self.counter = 0
-        self.position_saved = False
 
     def spin(self):
-        if self.position_saved:
-            self.prompt.reset_position()
+        """
+        Renders the next image in the spinner sequence.
+        """
 
-        self.prompt.save_position()
-        self.position_saved = True
+        if self.counter > 0:
+            self.prompt.move(okaara.prompt.MOVE_UP % 1)
+            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
 
         index = self.counter % len(self.sequence)
         self.counter += 1
@@ -134,8 +141,24 @@ if __name__ == '__main__':
 
     total = 21
     for i in range(0, total + 1):
-        pb.render(i, total, 'Step: %d of %d' % (i, total))
+        multi_line = False
+
+        message = 'Step: %d of %d' % (i, total)
+
+        if i % 3 is 0:
+            message += '\nSecond line in message'
+            multi_line = True
+
+        if i % 6 is 0:
+            message += '\nThird line in message'
+            multi_line = True
+
+        pb.render(i, total, message)
         time.sleep(.1)
+
+        # Sleep a bit longer on the second line messages so it doesn't flicker as much
+        if multi_line:
+            time.sleep(.25)
 
     p.write('Completed first progress bar example')
     p.write('')
