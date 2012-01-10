@@ -7,7 +7,6 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-
 import getpass
 import logging
 import os
@@ -47,6 +46,16 @@ COLOR_BG_BLUE = '\033[44m'
 COLOR_BG_PURPLE = '\033[45m'
 COLOR_BG_CYAN = '\033[46m'
 
+POSITION_SAVE = '\033[s'
+POSITION_RESET = '\033[u'
+
+MOVE_UP = '\033[%dA' # sub in number of lines
+MOVE_DOWN = '\033[%dB' # sub in number of lines
+MOVE_FORWARD = '\033[%dC' # sub in number of characters
+MOVE_BACKWARD = '\033[%dD' # sub in number of characters
+
+CLEAR = '\033[2J'
+CLEAR_EOL = '\033[K'
 
 # -- classes ------------------------------------------------------------------
 
@@ -89,6 +98,86 @@ class Prompt:
 
         # Initialize the screen with the normal color
         self.write(self.normal_color, new_line=False)
+
+    # -- general --------------------------------------------------------------
+
+    def read(self, prompt):
+        """
+        Reads user input. This will likely not be called in favor of one of the prompt_* methods.
+
+        @param prompt: the prompt displayed to the user when the input is requested
+        @type  prompt: string
+
+        @return: the input specified by the user
+        @rtype:  string
+        """
+        self.write(prompt, new_line=False)
+        return self.input.readline().rstrip() # rstrip removes the trailing \n
+
+    def write(self, content, new_line=True):
+        """
+        Writes content to the prompt's output stream.
+
+        @param content: content to display to the user
+        @type  content: string
+        """
+        content = self._chop(content, self.wrap_width)
+
+        if new_line: content += '\n'
+
+        self.output.write(content)
+
+    def color(self, text, color):
+        """
+        Colors the given text with the given color, resetting the output back to whatever
+        color is defined in this instance's normal_color. Nothing is output to the screen;
+        the formatted string is returned.
+
+        @param text: text to color
+        @type  text: str
+
+        @param color: coding for the color (see the COLOR_* variables in this module)
+        @type  color: str
+
+        @return: new string with the proper color escape sequences in place
+        @rtype:  str
+        """
+
+        # Handle if color is disabled at the instance level
+        if not self.enable_color:
+            color = self.normal_color
+
+        return color + text + self.normal_color
+
+    def center(self, text, width=None):
+        """
+        Centers the given text. Nothing is output to the screen; the formatted string
+        is returned.
+
+        @param text: text to center
+        @type  text: str
+
+        @param width: width to center the text between; if None the wrap_width value
+                      will be used
+        @type  width: int
+        """
+
+        if width is None:
+            width = self.wrap_width
+
+        if len(text) >= width:
+            return text
+        else:
+            spacer = ' ' * ( (width - len(text)) / 2)
+            return spacer + text
+
+    def clear(self):
+        """
+        Clears the screen.
+        """
+        self.write(CLEAR, new_line=False)
+
+    # -- prompts --------------------------------------------------------------
 
     def prompt_file(self, question, allow_directory=False, allow_empty=False, interruptable=True):
         """
@@ -250,7 +339,7 @@ class Prompt:
             elif selection == 'b':
                 return ABORT
             elif selection == 'l':
-                os.system('clear')
+                self.clear()
             elif self._is_range(selection, len(menu_values)):
                 lower, upper = self._range(selection)
                 for i in range(lower, upper + 1):
@@ -496,76 +585,8 @@ class Prompt:
 
         return answer
 
-    def read(self, prompt):
-        """
-        Reads user input. This will likely not be called in favor of one of the prompt_* methods.
+    # -- private --------------------------------------------------------------
 
-        @param prompt: the prompt displayed to the user when the input is requested
-        @type  prompt: string
-
-        @return: the input specified by the user
-        @rtype:  string
-        """
-        self.write(prompt, new_line=False)
-        return self.input.readline().rstrip() # rstrip removes the trailing \n
-
-    def write(self, content, new_line=True):
-        """
-        Writes content to the prompt's output stream.
-
-        @param content: content to display to the user
-        @type  content: string
-        """
-        content = self._chop(content, self.wrap_width)
-
-        if new_line: content += '\n'
-        
-        self.output.write(content)
-
-    def color(self, text, color):
-        """
-        Colors the given text with the given color, resetting the output back to whatever
-        color is defined in this instance's normal_color. Nothing is output to the screen;
-        the formatted string is returned.
-
-        @param text: text to color
-        @type  text: str
-
-        @param color: coding for the color (see the COLOR_* variables in this module)
-        @type  color: str
-
-        @return: new string with the proper color escape sequences in place
-        @rtype:  str
-        """
-
-        # Handle if color is disabled at the instance level
-        if not self.enable_color:
-            color = self.normal_color
-
-        return color + text + self.normal_color
-
-    def center(self, text, width=None):
-        """
-        Centers the given text. Nothing is output to the screen; the formatted string
-        is returned.
-
-        @param text: text to center
-        @type  text: str
-
-        @param width: width to center the text between; if None the wrap_width value
-                      will be used
-        @type  width: int
-        """
-
-        if width is None:
-            width = self.wrap_width
-
-        if len(text) >= width:
-            return text
-        else:
-            spacer = ' ' * ( (width - len(text)) / 2)
-            return spacer + text
-    
     def _chop(self, content, wrap_width):
         """
         If the wrap_width is specified, this call will introduce \n characters
