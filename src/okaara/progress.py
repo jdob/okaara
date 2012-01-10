@@ -7,6 +7,13 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+"""
+Contains classes related to rendering progress indicators. Each object will
+take a Prompt as the output writer. The caller is responsible the iteration
+and will call the appropriate method in each object to make it display the
+current state.
+"""
+
 import math
 
 import okaara.prompt
