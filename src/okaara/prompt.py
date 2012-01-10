@@ -195,6 +195,20 @@ class Prompt:
         """
         self.write(clear_character, new_line=False)
 
+    def save_position(self):
+        """
+        Saves the current location of the cursor. The cursor can be moved back
+        to this position by using the reset_position call.
+        """
+        self.write(POSITION_SAVE, new_line=False)
+
+    def reset_position(self):
+        """
+        Moves the cursor back to the location of the cursor at the last point
+        save_position was called.
+        """
+        self.write(POSITION_RESET, new_line=False)
+
     # -- prompts --------------------------------------------------------------
 
     def prompt_file(self, question, allow_directory=False, allow_empty=False, interruptable=True):
