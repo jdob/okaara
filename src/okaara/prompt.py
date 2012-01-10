@@ -56,6 +56,7 @@ MOVE_BACKWARD = '\033[%dD' # sub in number of characters
 
 CLEAR = '\033[2J'
 CLEAR_EOL = '\033[K'
+CLEAR_REMAINDER = '\033[J'
 
 # -- classes ------------------------------------------------------------------
 
@@ -143,11 +144,11 @@ class Prompt:
         @rtype:  str
         """
 
-        # Handle if color is disabled at the instance level
+        # Skip the wrapping if color is disabled at the instance level
         if not self.enable_color:
-            color = self.normal_color
+            return text
 
-        return color + text + self.normal_color
+        return '%s%s%s' % (color, text, self.normal_color)
 
     def center(self, text, width=None):
         """
@@ -171,11 +172,28 @@ class Prompt:
             spacer = ' ' * ( (width - len(text)) / 2)
             return spacer + text
 
-    def clear(self):
+    def move(self, direction):
         """
-        Clears the screen.
+        Writes the given move cursor character to the screen without a new
+        line character. Values for direction should be one of the MOVE_*
+        variables.
+
+        @param direction: move character to write
+        @type  direction: str
         """
-        self.write(CLEAR, new_line=False)
+        self.write(direction, new_line=False)
+
+    def clear(self, clear_character=CLEAR):
+        """
+        Writes one of the clear characters to the screen. If none is given,
+        the entire screen is cleared. One of the CLEAR_* variables can be
+        used to scope the cleared space.
+
+        @param clear_character: character code to write; should be one of
+               the CLEAR_* variables
+        @type  clear_character: str
+        """
+        self.write(clear_character, new_line=False)
 
     # -- prompts --------------------------------------------------------------
 
