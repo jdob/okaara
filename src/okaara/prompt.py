@@ -602,7 +602,8 @@ class Prompt:
                               normal
         :type  interruptable: bool
 
-        :return: answer to the given question or ABORT if it was interrupted
+        :return: answer to the given question or the ABORT constant in this
+                 module if it was interrupted
         """
         answer = None
         while answer is None or answer.strip() == '':
