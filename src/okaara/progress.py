@@ -93,6 +93,40 @@ class ProgressBar:
 
         self.previous_lines_written = 1 + message_lines
 
+    def iterator(self, iterable, message_func=None):
+        """
+        Wraps an iterator to automatically make the appropriate calls into
+        the progress bar on each iteration. The supplied message_func can
+        be used to derive a message for each step in the iteration. For
+        example::
+
+          it = pb.iterator(items, message_func=lambda x : 'Generated message: %s' % x)
+          for i in it:
+            # do stuff
+
+        :param iterable: iterator to wrap
+        :type  iterable: iterator
+
+        :param message_func: called on each step of the iteration, passing in
+               the latest item retrieved from the iterator
+        :type  message_func: function
+
+        :return: iterator that will draw contents from the supplied iterator
+                 and automatically update the progress bar
+        :rtype:  iterator
+        """
+
+        total = len(iterable)
+        message = None
+
+        for step, item in enumerate(iterable):
+            yield item
+
+            if message_func is not None:
+                message = message_func(item)
+
+            self.render(step + 1, total, message=message)
+
 class Spinner:
 
     DEFAULT_SEQUENCE = '- \ | /'.split()
@@ -148,24 +182,16 @@ if __name__ == '__main__':
 
     total = 21
     for i in range(0, total + 1):
-        multi_line = False
-
         message = 'Step: %d of %d' % (i, total)
 
         if i % 3 is 0:
             message += '\nSecond line in message'
-            multi_line = True
 
         if i % 6 is 0:
             message += '\nThird line in message'
-            multi_line = True
 
         pb.render(i, total, message)
-        time.sleep(.1)
-
-        # Sleep a bit longer on the second line messages so it doesn't flicker as much
-        if multi_line:
-            time.sleep(.25)
+        time.sleep(.25)
 
     p.write('Completed first progress bar example')
     p.write('')
@@ -178,6 +204,18 @@ if __name__ == '__main__':
         time.sleep(.1)
 
     p.write('Completed second progress bar example')
+    p.write('')
+
+    pb = ProgressBar(p)
+
+    items = 'a b c d e f g h i j k l m n o p'.split()
+    wrapped = pb.iterator(items, message_func=lambda x: 'Generated for item: %s' % x)
+
+    for w in wrapped:
+        # Do important stuff but don't worry about progress bar
+        time.sleep(.3)
+
+    p.write('Completed wrapped iteration through progress bar')
     p.write('')
 
     spinner = Spinner(p)
