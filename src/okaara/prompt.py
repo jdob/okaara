@@ -226,7 +226,7 @@ class Prompt:
         else:
             self.write('Cannot find file, please enter a valid path')
             self.write('')
-            return self.prompt_file(question)
+            return self.prompt_file(question, allow_directory=allow_directory, allow_empty=allow_empty, interruptable=interruptable)
 
     def prompt_values(self, question, values, interruptable=True):
         """
