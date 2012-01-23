@@ -25,8 +25,8 @@ class CommandUsage(Exception):
     Indicates the command parameters were incorrect. If the usage error was the lack of
     required parameters, all required parameters that were missing can be specified.
 
-    @param missing_options: optional list of options that are required but missing
-    @type  missing_options: list of L{Option}
+    :param missing_options: optional list of options that are required but missing
+    :type  missing_options: list of L{Option}
     """
     def __init__(self, missing_options=None):
         Exception.__init__(self)
@@ -82,10 +82,10 @@ class Command():
         """
         Executes this command, passing the remaining arguments into OptParse to process.
 
-        @param args: any arguments that remained after parsing the command line to determine
+        :param args: any arguments that remained after parsing the command line to determine
                      the command to execute; these are considered arguments to the command's
                      execution itself
-        @type  args: list of strings
+        :type  args: list of strings
         """
 
         # Parse the command arguments into a dictionary
@@ -114,8 +114,8 @@ class Command():
         command, the user specified arguments to the command are parsed according to options
         specified in this fashion.
 
-        @param option: option (or flag) to add to the command
-        @type  option: L{Option} or L{Flag}
+        :param option: option (or flag) to add to the command
+        :type  option: L{Option} or L{Flag}
         """
         self.options.append(option)
 
@@ -123,8 +123,8 @@ class Command():
         """
         Parses the arguments passed into this command based on the configured options.
 
-        @return: mapping of argument to value
-        @rtype:  dict
+        :return: mapping of argument to value
+        :rtype:  dict
         """
         parser = NoCatchErrorParser()
 
@@ -159,8 +159,8 @@ class Section():
         specifying this section. Doing so will recurse into the subsection's subtree to
         continue parsing for other subsections or commands.
 
-        @param section: section instance to add
-        @type  section: L{Section}
+        :param section: section instance to add
+        :type  section: L{Section}
         """
         self._verify_new_structure(section.name)
         self.subsections[section.name] = section
@@ -171,8 +171,8 @@ class Section():
         node of the CLI tree). Any arguments that were specified after the path used to
         identify this command will be passed to the command's execution itself.
 
-        @param command: command object to add
-        @type  command: L{Command}
+        :param command: command object to add
+        :type  command: L{Command}
         """
         self._verify_new_structure(command.name)
         self.commands[command.name] = command
@@ -181,11 +181,11 @@ class Section():
         """
         Returns the subsection of this section with the given name.
 
-        @param name: required; name of the subsection to find
-        @type  name: string
+        :param name: required; name of the subsection to find
+        :type  name: string
 
-        @return: section object for the matching subsection if it exists; None otherwise
-        @rtype:  L{Section} or None
+        :return: section object for the matching subsection if it exists; None otherwise
+        :rtype:  L{Section} or None
         """
         if self.subsections.has_key(name):
             return self.subsections[name]
@@ -196,11 +196,11 @@ class Section():
         """
         Returns the command under this section with the given name.
 
-        @param name: required; name of the command to find
-        @type  name: string
+        :param name: required; name of the command to find
+        :type  name: string
 
-        @return: command object for the matching command if it exists; None otherwise
-        @rtype:  L{Command} or None
+        :return: command object for the matching command if it exists; None otherwise
+        :rtype:  L{Command} or None
         """
         if self.commands.has_key(name):
             return self.commands[name]
@@ -212,10 +212,10 @@ class Section():
         Integrity check to validate that the CLI has not been configured with an entity
         (subsection or command) with the given name.
 
-        @param name: name of the subsection/command to look for
-        @type  name:  string
+        :param name: name of the subsection/command to look for
+        :type  name:  string
 
-        @raise InvalidStructure: if there is an entity with the given name
+        :raise InvalidStructure: if there is an entity with the given name
         """
         # Make sure there isn't already a subsection with the same name
         if self.subsections.has_key(name):
@@ -245,8 +245,8 @@ class Cli():
         specifying this section. Doing so will recurse into the section's subtree to
         continue parsing for other subsections or commands.
 
-        @param section: section instance to add
-        @type  section: L{Section}
+        :param section: section instance to add
+        :type  section: L{Section}
         """
         self.root_section.add_subsection(section)
 
@@ -256,8 +256,8 @@ class Cli():
         to execute, as well as any arguments to that command's execution. After assembling
         the CLI using the add_* calls, this method should be run to do the actual work.
 
-        @param args: defines the command being invoked and any arguments to it
-        @type  args: list of string
+        :param args: defines the command being invoked and any arguments to it
+        :type  args: list of string
         """
         command_or_section, remaining_args = self._find_closest_match(self.root_section, args)
 
@@ -275,11 +275,11 @@ class Cli():
         """
         Prints the structure of the CLI in a tree-like structure to indicate section ownership.
 
-        @param indent: number of spaces to indent each section
-        @type  indent: int
+        :param indent: number of spaces to indent each section
+        :type  indent: int
 
-        @param step: number of spaces to increment the indent on each iteration into a section
-        @type  step: int
+        :param step: number of spaces to increment the indent on each iteration into a section
+        :type  step: int
         """
         self._recursive_print_section(self.root_section, indent=indent, step=step)
 
@@ -287,11 +287,11 @@ class Cli():
         """
         Prints the contents of a section and all of its children (subsections and commands).
 
-        @param indent: number of spaces to indent each section
-        @type  indent: int
+        :param indent: number of spaces to indent each section
+        :type  indent: int
 
-        @param step: number of spaces to increment the indent on each iteration into a section
-        @type  step: int        
+        :param step: number of spaces to increment the indent on each iteration into a section
+        :type  step: int        
         """
         # Need a way to not print the root section of the CLI, which doesn't represent
         # an actual user section, so a ghetto check is to make sure the name isn't blank
@@ -314,14 +314,14 @@ class Cli():
         Prints the direct children of a single section; this call will not recurse into the
         children and print their hierarchy.
 
-        @param section: required; section to print
-        @type  section: L{Section}
+        :param section: required; section to print
+        :type  section: L{Section}
 
-        @param indent: number of spaces to indent each section
-        @type  indent: int
+        :param indent: number of spaces to indent each section
+        :type  indent: int
 
-        @param step: number of spaces to increment the indent on each iteration into a section
-        @type  step: int
+        :param step: number of spaces to increment the indent on each iteration into a section
+        :type  step: int
         """
         if section.name != '':
             self.prompt.write('%s%s' % (' ' * indent, section.description))
@@ -340,18 +340,18 @@ class Cli():
         """
         Prints the details of a command, including all options that can be specified to it.
 
-        @param command: command to print
-        @type  command: L{Command}
+        :param command: command to print
+        :type  command: L{Command}
 
-        @param missing_required: list of required options that were not specified on an
+        :param missing_required: list of required options that were not specified on an
                                  invocation of the CLI
-        @type  missing_required: list of L{Option}
+        :type  missing_required: list of L{Option}
 
-        @param indent: number of spaces to indent the command
-        @type  indent: int
+        :param indent: number of spaces to indent the command
+        :type  indent: int
 
-        @param step: number of spaces to increment the indent the command's options
-        @type  step: int
+        :param step: number of spaces to increment the indent the command's options
+        :type  step: int
         """
 
         self.prompt.write('%s%s: %s' % (' ' * indent, command.name, command.description))
@@ -374,14 +374,14 @@ class Cli():
         Searches the CLI structure for the command that matches the path in the given arguments.
         If no command is found,
 
-        @param base_section: root section from which to begin the search
-        @type  base_section: L{Section}
+        :param base_section: root section from which to begin the search
+        :type  base_section: L{Section}
 
-        @param args: list of arguments to use as the path to the command to search
-        @type  args: list
+        :param args: list of arguments to use as the path to the command to search
+        :type  args: list
 
-        @return: tuple of the closest matching command or section based on the argument list
-        @rtype:  L{Command}, list or L{Section}, list
+        :return: tuple of the closest matching command or section based on the argument list
+        :rtype:  L{Command}, list or L{Section}, list
         """
 
         # If we've recursed so much that we ran out of arguments, we haven't found a command yet,

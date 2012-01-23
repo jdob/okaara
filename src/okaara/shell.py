@@ -41,18 +41,18 @@ class Shell:
         Creates an empty shell. At least one screen must be added to the shell
         before it is used.
 
-        @param prompt: specifies a prompt object to use for reading/writing to the
+        :param prompt: specifies a prompt object to use for reading/writing to the
                        console; if not specified will default to L{Prompt}
-        @type  prompt: L{Prompt}
+        :type  prompt: L{Prompt}
 
-        @param auto_render_menu: if True, the menu will automatically be rendered after
+        :param auto_render_menu: if True, the menu will automatically be rendered after
                                  the execution of each menu item; defaults to False
-        @type  auto_render_menu: bool
+        :type  auto_render_menu: bool
 
-        @param include_long_triggers: if True, the long versions of default triggers will
+        :param include_long_triggers: if True, the long versions of default triggers will
                                       be added, if False only single-character triggers
                                       will be added; defaults to True
-        @type  include_long_triggers: bool
+        :type  include_long_triggers: bool
         """
         self.home_screen = None
         self.current_screen = None
@@ -96,8 +96,8 @@ class Shell:
         Adds a new screen for the shell. If a screen was previously added with the
         same screen ID, the newly added screen will replace it.
 
-        @param screen: describes a screen in the shell; may not be None
-        @type  screen: L{Screen}
+        :param screen: describes a screen in the shell; may not be None
+        :type  screen: L{Screen}
         """
         if screen is None:
             raise ValueError('screen may not be None')
@@ -121,8 +121,8 @@ class Shell:
         If a menu item with the same trigger already exists, it will be
         removed from the menu and replaced by the newly added item.
 
-        @param menu_item: new item to add to the shell; may not be None
-        @type  menu_item: L{MenuItem}
+        :param menu_item: new item to add to the shell; may not be None
+        :type  menu_item: L{MenuItem}
         """
         if menu_item is None:
             raise ValueError('menu_item may not be None')
@@ -229,16 +229,16 @@ class Shell:
         Transitions the state of the shell to the identified screen. If no screen
         exists with the given ID, the shell will be transitioned to the home screen.
 
-        @param to_screen_id: identifies the screen to change the shell to; may not
+        :param to_screen_id: identifies the screen to change the shell to; may not
                              be None
-        @type  to_screen_id: string
+        :type  to_screen_id: string
 
-        @param show_menu: if True, the menu for the newly transitioned to screen
+        :param show_menu: if True, the menu for the newly transitioned to screen
                           will be displayed
-        @type  show_menu: bool
+        :type  show_menu: bool
 
-        @param clear: if True, the screen will be cleared before the transition is made
-        @type  clear: bool
+        :param clear: if True, the screen will be cleared before the transition is made
+        :type  clear: bool
         """
 
         if to_screen_id is None or to_screen_id not in self.screens:
@@ -328,9 +328,9 @@ class Screen:
 
     def __init__(self, id):
         """
-        @param id: uniquely identifies this screen instance in a shell; may not
+        :param id: uniquely identifies this screen instance in a shell; may not
                    be None
-        @type  id: string
+        :type  id: string
         """
         if id is None:
             raise ValueError('id may not be None')
@@ -349,8 +349,8 @@ class Screen:
         the same trigger already exists, it will be removed from the menu and
         replaced by the newly added item.
 
-        @param menu_item: new item to add to this screen; may not be None
-        @type  menu_item: L{MenuItem}
+        :param menu_item: new item to add to this screen; may not be None
+        :type  menu_item: L{MenuItem}
         """
 
         if menu_item is None:
@@ -367,11 +367,11 @@ class Screen:
         """
         Returns the menu item for the given trigger if one exists; None otherwise.
 
-        @param trigger: identifies the menu item being searched for
-        @type  trigger: string
+        :param trigger: identifies the menu item being searched for
+        :type  trigger: string
 
-        @return: menu item for the given trigger if one is found; None otherwise
-        @rtype:  L{MenuItem} or None
+        :return: menu item for the given trigger if one is found; None otherwise
+        :rtype:  L{MenuItem} or None
         """
         return self.menu_items.get(trigger)
 
@@ -379,8 +379,8 @@ class Screen:
         """
         Returns a list of menu items in this screen.
 
-        @return: list of menu items; empty list if none have been added
-        @rtype:  list of L{MenuItem}
+        :return: list of menu items; empty list if none have been added
+        :rtype:  list of L{MenuItem}
         """
         return tuple(self.ordered_menu_items)
 
@@ -406,24 +406,24 @@ class MenuItem:
 
     def __init__(self, triggers, description, func=noop, *args, **kwargs):
         """
-        @param triggers: character or string (or list of them) the user will
+        :param triggers: character or string (or list of them) the user will
                          input to cause the associated function to be invoked;
                          may not be None
-        @type  triggers: str or list
+        :type  triggers: str or list
 
-        @param description: short (1-2 line) description of what the menu item
+        :param description: short (1-2 line) description of what the menu item
                             does; displayed
-        @type  description: string
+        :type  description: string
 
-        @param func: function to invoke when this menu item is selected; extra
+        :param func: function to invoke when this menu item is selected; extra
                      arguments specified after the trigger will be passed to
                      this function; may not be None
-        @type  func: function
+        :type  func: function
 
-        @param args: arguments that will be passed to the function when it is
+        :param args: arguments that will be passed to the function when it is
                      executed
 
-        @param kwargs: key word arguments to be passed to the function when it
+        :param kwargs: key word arguments to be passed to the function when it
                        is executed
         """
         if triggers is None:

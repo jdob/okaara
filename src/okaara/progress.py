@@ -22,27 +22,27 @@ class ProgressBar:
 
     def __init__(self, prompt, width=40, show_trailing_percentage=False, fill='=', left_tick='[', right_tick=']'):
         """
-        @param prompt: prompt instance to write to
-        @type  prompt: L{Prompt}
+        :param prompt: prompt instance to write to
+        :type  prompt: L{Prompt}
 
-        @param width: number of characters wide the progress bar should be;
+        :param width: number of characters wide the progress bar should be;
                this includes both the fill and the left/right ticks but does
                not include the trailing percentage if indicated
-        @type  width: int
+        :type  width: int
 
-        @param show_trailing_percentage: if True, the current percentage complete
+        :param show_trailing_percentage: if True, the current percentage complete
                will be listed after the progress bar; defaults to False
-        @type  show_trailing_percentage: bool
+        :type  show_trailing_percentage: bool
 
-        @param fill: character to use as the filled value of the progress bar;
+        :param fill: character to use as the filled value of the progress bar;
                this must be a single character or the math gets messed up
-        @type  fill: str
+        :type  fill: str
 
-        @param left_tick: displayed on the left side of the progress bar
-        @type  left_tick: str
+        :param left_tick: displayed on the left side of the progress bar
+        :type  left_tick: str
 
-        @param right_tick: displayed on the right side of the progress bar
-        @type  right_tick: str
+        :param right_tick: displayed on the right side of the progress bar
+        :type  right_tick: str
         """
         self.prompt = prompt
 
@@ -99,17 +99,17 @@ class Spinner:
 
     def __init__(self, prompt, sequence=DEFAULT_SEQUENCE, left_tick='[', right_tick=']'):
         """
-        @param prompt: prompt instance to write to
-        @type  prompt: L{Prompt}
+        :param prompt: prompt instance to write to
+        :type  prompt: L{Prompt}
 
-        @param sequence: list of characters to iterate over while spinning
-        @type  sequence: list
+        :param sequence: list of characters to iterate over while spinning
+        :type  sequence: list
 
-        @param left_tick: displayed on the left side of the spinner
-        @type  left_tick: str
+        :param left_tick: displayed on the left side of the spinner
+        :type  left_tick: str
 
-        @param right_tick: displayed on the right side of the spinner
-        @type  right_tick: str
+        :param right_tick: displayed on the right side of the spinner
+        :type  right_tick: str
 
         """
         self.prompt = prompt
