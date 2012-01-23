@@ -403,6 +403,12 @@ class Cli():
         # Find the subsection
         subsection = base_section.find_subsection(find_me)
         if subsection is not None:
+
+            # Don't recurse if we're at a section and the next argument is an option
+            if len(args) > 1 and args[1].startswith('--'):
+                return subsection, args[1:]
+
             found_in_subsection, sub_args = self._find_closest_match(subsection, args[1:])
+
 
         return found_in_subsection, sub_args
