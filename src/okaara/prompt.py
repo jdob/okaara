@@ -72,24 +72,24 @@ class Prompt:
         """
         Creates a new instance that will read and write to the given streams.
 
-        @param input: stream to read from; defaults to stdin
-        @type  input: file
+        :param input: stream to read from; defaults to stdin
+        :type  input: file
 
-        @param output: stream to write prompt statements to; defaults to stdout
-        @type  output: file
+        :param output: stream to write prompt statements to; defaults to stdout
+        :type  output: file
 
-        @param normal_color: color of the text to write; this will be used in the color
+        :param normal_color: color of the text to write; this will be used in the color
                              function to reset the text after coloring it
-        @type  normal_color: str (one of the COLOR_* variables in this module)
+        :type  normal_color: str (one of the COLOR_* variables in this module)
 
-        @param enable_color: determines if this prompt instance will output any modified
+        :param enable_color: determines if this prompt instance will output any modified
                              colors; if this is false the color() method will
                              always render the text as the normal_color
-        @type  enable_color: bool
+        :type  enable_color: bool
 
-        @param wrap_width: if specified, content written by this prompt will
+        :param wrap_width: if specified, content written by this prompt will
                            automatically be wrapped to this width
-        @type  wrap_width: int or None
+        :type  wrap_width: int or None
         """
         self.input = input
         self.output = output
@@ -106,11 +106,11 @@ class Prompt:
         """
         Reads user input. This will likely not be called in favor of one of the prompt_* methods.
 
-        @param prompt: the prompt displayed to the user when the input is requested
-        @type  prompt: string
+        :param prompt: the prompt displayed to the user when the input is requested
+        :type  prompt: string
 
-        @return: the input specified by the user
-        @rtype:  string
+        :return: the input specified by the user
+        :rtype:  string
         """
         self.write(prompt, new_line=False)
         return self.input.readline().rstrip() # rstrip removes the trailing \n
@@ -119,8 +119,8 @@ class Prompt:
         """
         Writes content to the prompt's output stream.
 
-        @param content: content to display to the user
-        @type  content: string
+        :param content: content to display to the user
+        :type  content: string
         """
         content = self._chop(content, self.wrap_width)
 
@@ -134,14 +134,14 @@ class Prompt:
         color is defined in this instance's normal_color. Nothing is output to the screen;
         the formatted string is returned.
 
-        @param text: text to color
-        @type  text: str
+        :param text: text to color
+        :type  text: str
 
-        @param color: coding for the color (see the COLOR_* variables in this module)
-        @type  color: str
+        :param color: coding for the color (see the COLOR_* variables in this module)
+        :type  color: str
 
-        @return: new string with the proper color escape sequences in place
-        @rtype:  str
+        :return: new string with the proper color escape sequences in place
+        :rtype:  str
         """
 
         # Skip the wrapping if color is disabled at the instance level
@@ -155,12 +155,12 @@ class Prompt:
         Centers the given text. Nothing is output to the screen; the formatted string
         is returned.
 
-        @param text: text to center
-        @type  text: str
+        :param text: text to center
+        :type  text: str
 
-        @param width: width to center the text between; if None the wrap_width value
+        :param width: width to center the text between; if None the wrap_width value
                       will be used
-        @type  width: int
+        :type  width: int
         """
 
         if width is None:
@@ -178,8 +178,8 @@ class Prompt:
         line character. Values for direction should be one of the MOVE_*
         variables.
 
-        @param direction: move character to write
-        @type  direction: str
+        :param direction: move character to write
+        :type  direction: str
         """
         self.write(direction, new_line=False)
 
@@ -189,9 +189,9 @@ class Prompt:
         the entire screen is cleared. One of the CLEAR_* variables can be
         used to scope the cleared space.
 
-        @param clear_character: character code to write; should be one of
+        :param clear_character: character code to write; should be one of
                the CLEAR_* variables
-        @type  clear_character: str
+        :type  clear_character: str
         """
         self.write(clear_character, new_line=False)
 
@@ -233,11 +233,11 @@ class Prompt:
         Prompts the user for the answer to a question where only an enumerated set of values
         should be accepted.
 
-        @param values: list of acceptable answers to the question
-        @type  values: list
+        :param values: list of acceptable answers to the question
+        :type  values: list
 
-        @return: will be one of the entries in the values parameter
-        @rtype:  string
+        :return: will be one of the entries in the values parameter
+        :rtype:  string
         """
         a = None
         while a not in values:
@@ -251,8 +251,8 @@ class Prompt:
         'n' for no. If neither is entered, the user will be re-prompted until one of the two is
         indicated.
 
-        @return: True if 'y' was specified, False otherwise
-        @rtype:  boolean
+        :return: True if 'y' was specified, False otherwise
+        :rtype:  boolean
         """
         a = ''
         while a != 'y' and a != 'n' and a is not ABORT:
@@ -282,8 +282,8 @@ class Prompt:
         Prompts the user for a numerical input. If the given value does not represent a number,
         the user will be re-prompted until a valid number is provided.
 
-        @return: number entered by the user that conforms to the parameters in this call
-        @rtype:  int
+        :return: number entered by the user that conforms to the parameters in this call
+        :rtype:  int
         """
         while True:
             a = self.prompt(question, allow_empty=default_value is not None, interruptable=interruptable)
@@ -312,8 +312,8 @@ class Prompt:
         Prompts the user for an answer to the given question. If the user does not enter a value,
         the default will be returned.
 
-        @param default_value: if the user does not enter a value, this value is returned
-        @type  default_value: string
+        :param default_value: if the user does not enter a value, this value is returned
+        :type  default_value: string
         """
         answer = self.prompt(question, allow_empty=True, interruptable=interruptable)
 
@@ -327,9 +327,9 @@ class Prompt:
         Displays a list of items, allowing the user to select 1 or more items before continuing.
         The items selected by the user are returned.
 
-        @return: list of indices of the items the user selected, empty list if none are selected;
+        :return: list of indices of the items the user selected, empty list if none are selected;
                  None is returned if the user selects to abort the menu
-        @rtype : list of int or None
+        :rtype:  list of int or None
         """
         selected_indices = []
 
@@ -426,19 +426,19 @@ class Prompt:
 
         If the user chooses the "abort" option, None is returned.
 
-        @param question: displayed to the user before displaying the menu
-        @type  question: str
+        :param question: displayed to the user before displaying the menu
+        :type  question: str
 
-        @param section_items: data to be rendered; each key must be a string and each value must
+        :param section_items: data to be rendered; each key must be a string and each value must
                               be a list of strings
-        @type  section_items: dict {str : list[str]}
+        :type  section_items: dict {str : list[str]}
 
-        @param section_post_text: if specified, this string will be displayed on its own line between
+        :param section_post_text: if specified, this string will be displayed on its own line between
                                   each section
-        @type  section_post_text: str
+        :type  section_post_text: str
 
-        @return: selected indices for each list specified in each section; see above
-        @rtype:  dict {str : list[int]}
+        :return: selected indices for each list specified in each section; see above
+        :rtype:  dict {str : list[int]}
         """
         selected_index_map = {}
         for key in section_items:
@@ -530,15 +530,15 @@ class Prompt:
         Displays a list of items, allowing the user to select a single item in the
         list. The selected value is returned.
 
-        @param question: displayed to the user prior to rendering the list
-        @type  question: str
+        :param question: displayed to the user prior to rendering the list
+        :type  question: str
 
-        @param menu_values: list of items to display in the menu; the returned value
+        :param menu_values: list of items to display in the menu; the returned value
                             will be one of the items in this list
-        @type  menu_values: list of str
+        :type  menu_values: list of str
 
-        @return: index of the selected item; None if the user elected to abort
-        @rtype:  int or None
+        :return: index of the selected item; None if the user elected to abort
+        :rtype:  int or None
         """
 
         self.write(question)
@@ -568,8 +568,8 @@ class Prompt:
         Due to the way getpass works, this method intentionally does not support
         the "interruptable" keyword.
 
-        @return: entered password
-        @rtype:  str
+        :return: entered password
+        :rtype:  str
         """
         while True:
             password_1 = getpass.getpass(question, stream=self.output)
@@ -590,18 +590,18 @@ class Prompt:
         Prompts the user for an answer to the given question, re-prompting if the answer is
         blank.
 
-        @param question: displayed to the user when prompting for input
-        @type  question: str
+        :param question: displayed to the user when prompting for input
+        :type  question: str
 
-        @param allow_empty: if True, a blank line will be accepted as input
-        @type  allow_empty: bool
+        :param allow_empty: if True, a blank line will be accepted as input
+        :type  allow_empty: bool
 
-        @param interruptable: if True, keyboard interrupts will be caught and None will
+        :param interruptable: if True, keyboard interrupts will be caught and None will
                               be returned; if False, keyboard interrupts will raise as
                               normal
-        @type  interruptable: bool
+        :type  interruptable: bool
 
-        @return: answer to the given question or ABORT if it was interrupted
+        :return: answer to the given question or ABORT if it was interrupted
         """
         answer = None
         while answer is None or answer.strip() == '':
@@ -642,9 +642,9 @@ class Prompt:
 
     def _is_range(self, input, selectable_item_count):
         """
-        @return: True if the input represents a range in a multiselect menu,
+        :return: True if the input represents a range in a multiselect menu,
                  False otherwise
-        @rtype:  bool
+        :rtype:  bool
         """
         parsed = input.split('-')
         if len(parsed) != 2:
@@ -663,8 +663,8 @@ class Prompt:
         return the lower and upper indices of the range (the entered values
         will be subtracted by 1 to accomodate for UI view).
 
-        @return: tuple of (lower boundary, upper boundary)
-        @rtype: (int, int)
+        :return: tuple of (lower boundary, upper boundary)
+        :rtype: (int, int)
         """
         parsed = input.split('-')
         return int(parsed[0].strip()) - 1, int(parsed[1].strip()) - 1
