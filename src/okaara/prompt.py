@@ -402,27 +402,28 @@ class Prompt:
         section_items under that key. If no items were selected under a given section, an empty
         list is the value in the return for each section key.
 
-        For example, given the input data:
-        { 'Section 1' : ['Item 1.1', 'Item 1.2'],
-          'Section 2' : ['Item 2.1'],
-        }
+        For example, given the input data::
 
-        The following is rendered for the user:
-             Section 1
-                -  1 : Item 1.1
-                -  2 : Item 1.2
-              Section 2
-                -  3 : Item 2.1
+            { 'Section 1' : ['Item 1.1', 'Item 1.2'],
+              'Section 2' : ['Item 2.1'],}
 
-        If the user entered 1, 2, and 3, thus toggling them as selected, the following would be returned:
-        { 'Section 1' : [0, 1],
-          'Section 2' : [0],
-        }
+        The following is rendered for the user::
 
-        However, if only 2 was toggled, the return would be:
-        { 'Section 1' : [1],
-          'Section 2' : [],
-        }
+            Section 1
+              -  1 : Item 1.1
+              -  2 : Item 1.2
+            Section 2
+              -  3 : Item 2.1
+
+        If the user entered 1, 2, and 3, thus toggling them as selected, the following would be returned::
+
+            { 'Section 1' : [0, 1],
+              'Section 2' : [0],}
+
+        However, if only 2 was toggled, the return would be::
+
+            { 'Section 1' : [1],
+              'Section 2' : [],}
 
         If the user chooses the "abort" option, None is returned.
 

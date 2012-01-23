@@ -23,7 +23,7 @@ class ProgressBar:
     def __init__(self, prompt, width=40, show_trailing_percentage=False, fill='=', left_tick='[', right_tick=']'):
         """
         :param prompt: prompt instance to write to
-        :type  prompt: L{Prompt}
+        :type  prompt: :py:class:`okaara.prompt.Prompt`
 
         :param width: number of characters wide the progress bar should be;
                this includes both the fill and the left/right ticks but does
