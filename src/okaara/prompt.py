@@ -7,10 +7,13 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import fcntl
 import getpass
 import logging
 import os
+import struct
 import sys
+import termios
 
 # -- constants ----------------------------------------------------------------
 
@@ -68,7 +71,7 @@ class Prompt:
     """
 
     def __init__(self, input=sys.stdin, output=sys.stdout, normal_color=COLOR_WHITE,
-                 enable_color=True, wrap_width=None):
+                 enable_color=True, wrap_width=None, record_tags=False):
         """
         Creates a new instance that will read and write to the given streams.
 
@@ -90,15 +93,23 @@ class Prompt:
         :param wrap_width: if specified, content written by this prompt will
                            automatically be wrapped to this width
         :type  wrap_width: int or None
+
+        :param record_tags: if true, the prompt will keep track of tags passed
+                            to all write calls
+        :param record_tags: bool
         """
         self.input = input
         self.output = output
         self.normal_color = normal_color
         self.enable_color = enable_color
         self.wrap_width = wrap_width
+        self.record_tags = record_tags
+
+        self.tags = []
 
         # Initialize the screen with the normal color
-        self.write(self.normal_color, new_line=False)
+        if self.enable_color:
+            self.write(self.normal_color, new_line=False)
 
     # -- general --------------------------------------------------------------
 
@@ -115,13 +126,14 @@ class Prompt:
         self.write(prompt, new_line=False)
         return self.input.readline().rstrip() # rstrip removes the trailing \n
 
-    def write(self, content, new_line=True):
+    def write(self, content, new_line=True, tag=None):
         """
         Writes content to the prompt's output stream.
 
         :param content: content to display to the user
         :type  content: string
         """
+        self._record_tag(tag)
         content = self._chop(content, self.wrap_width)
 
         if new_line: content += '\n'
@@ -153,18 +165,24 @@ class Prompt:
     def center(self, text, width=None):
         """
         Centers the given text. Nothing is output to the screen; the formatted string
-        is returned.
+        is returned. The width in which to center is the first non-None value
+        in the following order:
+         * Provided width parameter
+         * Instance-level wrap_width value
+         * Terminal width
 
         :param text: text to center
         :type  text: str
 
-        :param width: width to center the text between; if None the wrap_width value
-                      will be used
+        :param width: width to center the text between
         :type  width: int
         """
 
         if width is None:
-            width = self.wrap_width
+            if self.wrap_width is None:
+                width = self.terminal_size()[0]
+            else:
+                width = self.wrap_width
 
         if len(text) >= width:
             return text
@@ -208,6 +226,18 @@ class Prompt:
         save_position was called.
         """
         self.write(POSITION_RESET, new_line=False)
+
+    @classmethod
+    def terminal_size(cls):
+        """
+        Returns the width and height of the terminal.
+
+        :return: tuple of width and height values
+        :rtype:  (int, int)
+        """
+        ioctl = fcntl.ioctl(0, termios.TIOCGWINSZ, struct.pack('HHHH', 0, 0, 0, 0))
+        h, w, hp, wp = struct.unpack('HHHH', ioctl)
+        return w, h
 
     # -- prompts --------------------------------------------------------------
 
@@ -671,6 +701,22 @@ class Prompt:
         parsed = input.split('-')
         return int(parsed[0].strip()) - 1, int(parsed[1].strip()) - 1
 
+    def _record_tag(self, tag):
+        """
+        Stores the given tag in the prompt if it is configued to track them.
+        If the parameter is empty, an empty string will be recorded to indicate
+        the write call was made without a tag.
+
+        :param tag: value passed into the write call
+        :type  tag: object
+        """
+
+        if not self.record_tags:
+            return
+
+        self.tags.append(tag or '')
+
+
 class ScriptedPrompt(Prompt):
     """
     Prompt subclass that returns user input from a pre-set list of strings. Output will
@@ -693,7 +739,7 @@ class ScriptedPrompt(Prompt):
         """
         return self.read_values.pop(0)
 
-    def write(self, content, new_line=True):
+    def write(self, content, new_line=True, tag=None):
         """
         Stores the written message to the internal cache.
         """
