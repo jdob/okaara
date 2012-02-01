@@ -22,6 +22,10 @@ LOG = logging.getLogger(__name__)
 # Returned to indicate the user has interrupted the input
 ABORT = object()
 
+# Indicates the automatic wrap should use the current width of the screen,
+# calculated at the time of rendering
+WIDTH_TERMINAL = object()
+
 COLOR_WHITE = '\033[0m'
 COLOR_BRIGHT_WHITE = '\033[1m'
 
@@ -60,6 +64,7 @@ MOVE_BACKWARD = '\033[%dD' # sub in number of characters
 CLEAR = '\033[2J'
 CLEAR_EOL = '\033[K'
 CLEAR_REMAINDER = '\033[J'
+
 
 # -- classes ------------------------------------------------------------------
 
@@ -658,6 +663,9 @@ class Prompt:
         """
         if wrap_width is None:
             return content
+
+        if wrap_width is WIDTH_TERMINAL:
+            wrap_width = self.terminal_size()[0]
 
         wrapped_content = ''
         remainder = content[:]
