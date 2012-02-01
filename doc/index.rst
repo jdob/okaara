@@ -46,6 +46,9 @@ long running operations. Progress bars and spinners are supported, both of which
 may be configured with custom rendering ticks and can automatically wrap an
 iterator to simplify the update of the widget.
 
+For more information on the progress module, see :doc:`some examples <progress>`
+or :doc:`the progress module API documentation <progress-api>`.
+
 Shell
 ^^^^^
 

@@ -20,7 +20,7 @@ import okaara.prompt
 
 class ProgressBar:
 
-    def __init__(self, prompt, width=40, show_trailing_percentage=False, fill='=', left_tick='[', right_tick=']'):
+    def __init__(self, prompt, width=40, show_trailing_percentage=True, fill='=', left_tick='[', right_tick=']'):
         """
         :param prompt: prompt instance to write to
         :type  prompt: :py:class:`okaara.prompt.Prompt`
@@ -178,7 +178,7 @@ if __name__ == '__main__':
 
     p = okaara.prompt.Prompt()
 
-    pb = ProgressBar(p, show_trailing_percentage=True)
+    pb = ProgressBar(p)
 
     total = 21
     for i in range(0, total + 1):
@@ -196,7 +196,7 @@ if __name__ == '__main__':
     p.write('Completed first progress bar example')
     p.write('')
 
-    pb = ProgressBar(p, fill='*', left_tick='-<', right_tick='>-')
+    pb = ProgressBar(p, fill='*', left_tick='-<', right_tick='>-', show_trailing_percentage=False)
 
     total = 17
     for i in range(0, total + 1):
