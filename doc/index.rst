@@ -25,6 +25,11 @@ provides a number of utilities for more advanced output, such as:
 * Centering text
 * Arbitrary cursor placement in the terminal
 
+The okaara prompt also may be configured to tag output written to it. This
+ability may be used in unit tests to assert the correct messages are being
+displayed to the user. More information and examples of this can be found on
+the :doc:`prompt usage and examples page <prompt>`.
+
 The other major piece of functionality in the Okaara prompt is comprised of a
 series of formatted prompts to request input from the user. A user prompt can
 be configured to allow or deny empty responses, allow the user to indicate the
@@ -41,13 +46,16 @@ user in the event of an invalid input. The prompt functionality includes:
 * Menu-based inputs, including the ability to select more than one value from the menu before proceeding
 * Hidden password input
 
+More information can be found on the :doc:`usage and examples page <prompt>`
+or in the :doc:`prompt module API documentation <prompt-api>`.
+
 Okaara also provides a progress module for rendering progress indicators for
 long running operations. Progress bars and spinners are supported, both of which
 may be configured with custom rendering ticks and can automatically wrap an
 iterator to simplify the update of the widget.
 
 For more information on the progress module, see :doc:`some examples <progress>`
-or :doc:`the progress module API documentation <progress-api>`.
+or the :doc:`progress module API documentation <progress-api>`.
 
 Shell
 ^^^^^
