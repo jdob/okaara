@@ -65,6 +65,8 @@ CLEAR = '\033[2J'
 CLEAR_EOL = '\033[K'
 CLEAR_REMAINDER = '\033[J'
 
+TAG_READ = 'read'
+TAG_WRITE = 'write'
 
 # -- classes ------------------------------------------------------------------
 
@@ -118,7 +120,7 @@ class Prompt:
 
     # -- general --------------------------------------------------------------
 
-    def read(self, prompt, interruptable=True):
+    def read(self, prompt, tag=None, interruptable=True):
         """
         Reads user input. This will likely not be called in favor of one of the prompt_* methods.
 
@@ -128,6 +130,7 @@ class Prompt:
         :return: the input specified by the user
         :rtype:  string
         """
+        self._record_tag(TAG_READ, tag)
         self.write(prompt, new_line=False)
 
         try:
@@ -146,7 +149,7 @@ class Prompt:
         :param content: content to display to the user
         :type  content: string
         """
-        self._record_tag(tag)
+        self._record_tag(TAG_WRITE, tag)
         content = self._chop(content, self.wrap_width)
 
         if color is not None: content = self.color(content, color)
@@ -657,6 +660,45 @@ class Prompt:
 
         return answer
 
+    # -- utility --------------------------------------------------------------
+
+    def tags(self):
+        """
+        Returns all tags for both read and write calls. Unlike read_tags and
+        write_tags, the return value is a list of tuples. The first entry in
+        the tuple will be one of [TAG_READ, TAG_WRITE] to indicate what
+        triggered the tag. The second value in the tuple is the tag itself.
+
+        :return: list of tag tuples: (tag_type, tag_value); empty list if
+                 record_tags was set to false
+        :rtype:  list
+        """
+        return self.tags
+
+    def read_tags(self):
+        """
+        Returns the values for all tags that were passed to read calls.
+        If record_tags is enabled on this instance and a tag was not
+        specified, an empty string will be added in its place.
+
+        :return: list of tag values; empty list if record_tags was set to false
+        :rtype:  list
+        """
+        r = [t[1] for t in self.tags if t[0] == TAG_READ]
+        return r
+
+    def write_tags(self):
+        """
+        Returns the values for all tags that were passed to write calls.
+        If record_tags is enabled on this instance and a tag was not
+        specified, an empty string will be added in its place.
+
+        :return: list of tag values; empty list if record_tags was set to false
+        :rtype:  list
+        """
+        w = [t[1] for t in self.tags if t[0] == TAG_WRITE]
+        return w
+
     # -- private --------------------------------------------------------------
 
     def _chop(self, content, wrap_width):
@@ -712,7 +754,7 @@ class Prompt:
         parsed = input.split('-')
         return int(parsed[0].strip()) - 1, int(parsed[1].strip()) - 1
 
-    def _record_tag(self, tag):
+    def _record_tag(self, io, tag):
         """
         Stores the given tag in the prompt if it is configued to track them.
         If the parameter is empty, an empty string will be recorded to indicate
@@ -725,8 +767,10 @@ class Prompt:
         if not self.record_tags:
             return
 
-        self.tags.append(tag or '')
+        # Store in a tuple with the io direction
+        t = (io, tag or '')
 
+        self.tags.append(t)
 
 class ScriptedPrompt(Prompt):
     """
