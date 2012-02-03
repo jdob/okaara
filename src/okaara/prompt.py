@@ -662,7 +662,7 @@ class Prompt:
 
     # -- utility --------------------------------------------------------------
 
-    def tags(self):
+    def get_tags(self):
         """
         Returns all tags for both read and write calls. Unlike read_tags and
         write_tags, the return value is a list of tuples. The first entry in
@@ -675,7 +675,7 @@ class Prompt:
         """
         return self.tags
 
-    def read_tags(self):
+    def get_read_tags(self):
         """
         Returns the values for all tags that were passed to read calls.
         If record_tags is enabled on this instance and a tag was not
@@ -687,7 +687,7 @@ class Prompt:
         r = [t[1] for t in self.tags if t[0] == TAG_READ]
         return r
 
-    def write_tags(self):
+    def get_write_tags(self):
         """
         Returns the values for all tags that were passed to write calls.
         If record_tags is enabled on this instance and a tag was not
