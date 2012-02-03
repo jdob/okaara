@@ -118,7 +118,7 @@ class Prompt:
 
     # -- general --------------------------------------------------------------
 
-    def read(self, prompt):
+    def read(self, prompt, interruptable=True):
         """
         Reads user input. This will likely not be called in favor of one of the prompt_* methods.
 
@@ -129,9 +129,17 @@ class Prompt:
         :rtype:  string
         """
         self.write(prompt, new_line=False)
-        return self.input.readline().rstrip() # rstrip removes the trailing \n
 
-    def write(self, content, new_line=True, tag=None):
+        try:
+            r = self.input.readline().rstrip() # rstrip removes the trailing \n
+            return r
+        except (EOFError, KeyboardInterrupt), e:
+            if interruptable:
+                return ABORT
+            else:
+                raise e
+
+    def write(self, content, new_line=True, color=None, tag=None):
         """
         Writes content to the prompt's output stream.
 
@@ -140,6 +148,8 @@ class Prompt:
         """
         self._record_tag(tag)
         content = self._chop(content, self.wrap_width)
+
+        if color is not None: content = self.color(content, color)
 
         if new_line: content += '\n'
 
@@ -642,15 +652,8 @@ class Prompt:
         """
         answer = None
         while answer is None or answer.strip() == '':
-
-            try:
-                answer = self.read(question)
-                if allow_empty: break
-            except (EOFError, KeyboardInterrupt), e:
-                if interruptable:
-                    return ABORT
-                else:
-                    raise e
+            answer = self.read(question, interruptable=interruptable)
+            if allow_empty: break
 
         return answer
 
