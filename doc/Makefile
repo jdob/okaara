@@ -8,7 +8,7 @@ PAPER         =
 BUILDDIR      = _build
 
 # jdob
-SCP           = scp
+RSYNC         = rsync
 PUBLISH_DEST  = fedorapeople.org:public_html/okaara/
 
 
@@ -42,7 +42,9 @@ clean:
 	-rm -rf $(BUILDDIR)/*
 
 publish:
-	@$(SCP) -r $(BUILDDIR)/html/* $(PUBLISH_DEST)
+	@echo
+	@echo "Publishing documentation."
+	@$(RSYNC) -a $(BUILDDIR)/html/* $(PUBLISH_DEST)
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
