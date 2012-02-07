@@ -84,7 +84,8 @@ Testing Input
 The same tagging concept for writing is available to reading user input as well.
 There is a corresponding ``get_write_tags`` method for retrieving these tags.
 
-The prompt module also provides the ``ScriptedPrompt`` subclass to aid in testing.
-This still needs a bit of work but the intention is to provide a list of values
-that should be returned, in order, when the prompt attempts to read a value.
-This lets a unit test script out user input to simulate user interaction.
+The prompt module also provides the ``Script`` class to aid in testing. An
+instance of this class is pre-populated with the lines a simulated user would
+input. The instance is passed as the ``input`` parameter to the Prompt class.
+Each time the prompt attempts to read a value the script will pop the next
+string off the list of lines provided.

@@ -8,9 +8,16 @@ Prompt Class APIs
    :members:
    :special-members:
 
-ScriptedPrompt Class APIs
--------------------------
+Recorder Class APIs
+-------------------
 
-.. autoclass:: okaara.prompt.ScriptedPrompt
+.. autoclass:: okaara.prompt.Recorder
+   :members:
+   :special-members:
+
+Script Class APIs
+-----------------
+
+.. autoclass:: okaara.prompt.Script
    :members:
    :special-members:
