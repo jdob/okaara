@@ -75,6 +75,13 @@ In Okaara, a CLI provides the ability to structure and execute multiple, differe
 commands to a single script. Commands may be grouped into sections to provide a
 flexible organizational structure for the provided functionality.
 
+Download
+--------
+
+Built RPMs can be found at: `<http://jdob.fedorapeople.org/repo/>`_
+
+Source code can be found at: `<https://github.com/jdob/okaara/>`_
+
 API Documentation
 -----------------
 
