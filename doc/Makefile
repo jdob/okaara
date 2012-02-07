@@ -7,6 +7,11 @@ SPHINXBUILD   = sphinx-build
 PAPER         =
 BUILDDIR      = _build
 
+# jdob
+SCP           = scp
+PUBLISH_DEST  = fedorapeople.org:public_html/okaara/
+
+
 # Internal variables.
 PAPEROPT_a4     = -D latex_paper_size=a4
 PAPEROPT_letter = -D latex_paper_size=letter
@@ -35,6 +40,9 @@ help:
 
 clean:
 	-rm -rf $(BUILDDIR)/*
+
+publish:
+	@$(SCP) -r $(BUILDDIR)/html/* $(PUBLISH_DEST)
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
