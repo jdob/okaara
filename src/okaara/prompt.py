@@ -772,30 +772,26 @@ class Prompt:
 
         self.tags.append(t)
 
-class ScriptedPrompt(Prompt):
+class Recorder:
     """
-    Prompt subclass that returns user input from a pre-set list of strings. Output will
-    be written to a separate list of strings, allowing non-interactive alternatives for
-    working with a prompt.
+    Suitable for passing to the Prompt constructor as the output, an instance
+    of this class will store every line written to it in an internal list.
     """
 
     def __init__(self):
-        """
-        Initializes with an empty list of return prompt read results.
-        """
-        Prompt.__init__(self)
+        self.lines = []
 
-        self.read_values = []
-        self.write_values = []
+    def write(self, line):
+        self.lines.append(line)
 
-    def read(self, prompt):
-        """
-        Returns the next item in the script list as the result.
-        """
-        return self.read_values.pop(0)
+class Script:
+    """
+    Suitable for passing to the Prompt constructor as the input, an instance
+    of this class will return each line set within on each call to read.
+    """
 
-    def write(self, content, new_line=True, tag=None):
-        """
-        Stores the written message to the internal cache.
-        """
-        self.write_values.append(content)
+    def __init__(self, lines):
+        self.lines = lines
+
+    def readline(self, size=None):
+        return self.lines.pop(0)

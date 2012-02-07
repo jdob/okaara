@@ -10,16 +10,15 @@
 
 import unittest
 
-from okaara.prompt import Prompt, ScriptedPrompt, ABORT
+from okaara.prompt import Prompt, Recorder, Script, ABORT
 
 
 # -- mocks --------------------------------------------------------------------
 
 class InterruptingPrompt(Prompt):
 
-    def read(self, prompt):
+    def read(self, prompt, tag=None, interruptable=True):
         raise KeyboardInterrupt()
-
 
 # -- test cases ---------------------------------------------------------------
 
@@ -32,15 +31,15 @@ class PromptTest(unittest.TestCase):
         """
 
         # Setup
-        prompt = ScriptedPrompt()
-        prompt.read_values.append('')
-        prompt.read_values.append('value')
+        lines = ['', 'value']
+        script = Script(lines)
+        prompt = Prompt(input=script)
 
         # Test
         entered = prompt.prompt('Question')
 
         # Verify
-        self.assertEqual(0, len(prompt.read_values))
+        self.assertEqual(0, len(script.lines))
         self.assertEqual('value', entered)
 
     def test_prompt_allow_empty(self):
@@ -49,30 +48,16 @@ class PromptTest(unittest.TestCase):
         """
 
         # Setup
-        prompt = ScriptedPrompt()
-        prompt.read_values.append('')
-        prompt.read_values.append('not used')
+        lines = ['', 'not used']
+        script = Script(lines)
+        prompt = Prompt(input=script)
 
         # Test
-        entered = prompt.prompt("Question", allow_empty=True)
+        entered = prompt.prompt('Question', allow_empty=True)
 
         # Verify
-        self.assertEqual(1, len(prompt.read_values))
+        self.assertEqual(1, len(script.lines))
         self.assertEqual('', entered)
-
-    def test_prompt_interruptable(self):
-        """
-        Tests that interrupting the prompt when allowed does not throw an exception.
-        """
-
-        # Setup
-        prompt = InterruptingPrompt()
-
-        # Test
-        entered = prompt.prompt('Question', interruptable=True)
-
-        # Verify
-        self.assertEqual(ABORT, entered)
 
     def test_prompt_non_interruptable(self):
         """
@@ -91,9 +76,9 @@ class PromptTest(unittest.TestCase):
         """
 
         # Setup
-        prompt = ScriptedPrompt()
-        prompt.read_values.append('1')
-        prompt.read_values.append('2')
+        lines = ['1', '2']
+        script = Script(lines)
+        prompt = Prompt(input=script)
 
         items = ['a', 'b', 'c']
 
@@ -102,7 +87,7 @@ class PromptTest(unittest.TestCase):
 
         # Verify
         self.assertEqual(0, index)
-        self.assertEqual(1, len(prompt.read_values))
+        self.assertEqual(1, len(script.lines))
 
     def test_chop_short_wrap(self):
         """
@@ -110,7 +95,7 @@ class PromptTest(unittest.TestCase):
         """
 
         # Setup
-        prompt = ScriptedPrompt()
+        prompt = Prompt()
 
         # Test
         wrapped = prompt._chop('Spiderman', 3)
@@ -126,7 +111,7 @@ class PromptTest(unittest.TestCase):
         """
 
         # Setup
-        prompt = ScriptedPrompt()
+        prompt = Prompt()
 
         # Test
         wrapped = prompt._chop('Green Goblin', 100)
@@ -142,7 +127,7 @@ class PromptTest(unittest.TestCase):
         """
 
         # Setup
-        prompt = ScriptedPrompt()
+        prompt = Prompt()
 
         # Test
         wrapped = prompt._chop('Electro', None)
