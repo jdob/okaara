@@ -49,4 +49,4 @@ must be designated as the *home* screen. The home screen is the first screen
 displayed to the user. Additionally, the shell has built in menu functions
 for navigating directly back to the home screen. The first screen added to the
 shell will be designated as the home screen, however this can later be changed
-by specifying ``is_home=True`` when adding a differnt screen.
+by specifying ``is_home=True`` when adding a different screen.
