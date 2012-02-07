@@ -59,6 +59,21 @@ class PromptTest(unittest.TestCase):
         self.assertEqual(1, len(script.lines))
         self.assertEqual('', entered)
 
+    def test_read_interrupt(self):
+        """
+        Tests that having read catch interrupt correctly returns the abort code.
+        """
+
+        # Setup
+        script = Script([Script.INTERRUPT])
+        prompt = Prompt(input=script)
+
+        # Test
+        r = prompt.read('Thor', interruptable=True)
+
+        # Verify
+        self.assertEqual(ABORT, r)
+
     def test_prompt_non_interruptable(self):
         """
         Tests that a non-interruptable prompt properly raises an exception if interrupted.

@@ -790,8 +790,16 @@ class Script:
     of this class will return each line set within on each call to read.
     """
 
+    # If this is present in the list of lines, a KeyboardInterrupt will be raised
+    INTERRUPT = object()
+
     def __init__(self, lines):
         self.lines = lines
 
     def readline(self, size=None):
-        return self.lines.pop(0)
+        value = self.lines.pop(0)
+
+        if value is Script.INTERRUPT:
+            raise KeyboardInterrupt()
+
+        return value
