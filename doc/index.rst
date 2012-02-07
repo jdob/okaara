@@ -65,6 +65,9 @@ shell consists of one or more screens, each with their own menu of possible
 commands. Okaara provides the structure for navigating between screens, rendering
 of a screen's menu, and accepting the appropriate trigger to execute a menu's command.
 
+For more information on the shell module, see the :doc:`usage and examples page<shell>`
+or the :doc:`shell module API documentation <shell-api>`.
+
 CLI
 ^^^
 
