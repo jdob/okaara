@@ -17,7 +17,9 @@ here is to chain them together to pre-format the text. For example::
 
  p.write(p.center(p.color('Important', COLOR_RED)))
 
-In some cases, shortcuts are provided in the write methods themselves.
+In some cases, shortcuts are provided in the write methods themselves::
+
+ p.write('Important', color=COLOR_RED)
 
 Keyboard Interrupts
 ^^^^^^^^^^^^^^^^^^^
@@ -44,6 +46,11 @@ Colors
 The prompt module defines a number of constants used for coloring text. The
 ``COLOR_*`` variables should be the only values passed to either the color
 method or the color attribute on the write method.
+
+If the prompt is configured to not display colors (``enable_color`` in the
+constructor), all calls to the color method will not apply the color formatting.
+There is no need to manually decide whether or not to make the color call,
+the prompt instance will take care of enabling/disabling them for you.
 
 Testing
 =======
