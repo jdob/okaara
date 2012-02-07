@@ -10,6 +10,7 @@
 
 import unittest
 
+import okaara.prompt
 from okaara.prompt import Prompt, Recorder, Script, ABORT
 
 
@@ -151,4 +152,51 @@ class PromptTest(unittest.TestCase):
         pieces = wrapped.split('\n')
 
         self.assertEqual(1, len(pieces))
-        
+
+    def test_color(self):
+        """
+        Tests the color call correctly wraps the text with the correct markers.
+        """
+
+        # Test
+        prompt = Prompt()
+        colored = prompt.color('Hulk', okaara.prompt.COLOR_GREEN)
+
+        # Verify
+        expected = okaara.prompt.COLOR_GREEN + 'Hulk' + okaara.prompt.COLOR_WHITE
+        self.assertEqual(colored, expected)
+
+    def test_write_color(self):
+        """
+        Tests the color functionality built into write works.
+        """
+
+        # Setup
+        recorder = Recorder()
+        prompt = Prompt(output=recorder)
+
+        # Test
+        prompt.write('Hulk', color=okaara.prompt.COLOR_RED, new_line=False)
+
+        # Verify
+        expected = okaara.prompt.COLOR_RED + 'Hulk' + okaara.prompt.COLOR_WHITE
+        self.assertEqual(recorder.lines[1], expected)
+
+    def test_write_with_wrap(self):
+        """
+        Tests using an auto-wrap value correctly wraps text.
+        """
+
+        # Setup
+        recorder = Recorder()
+        prompt = Prompt(output=recorder, wrap_width=10)
+
+        # Test
+        prompt.write('-' * 20)
+
+        # Verify
+        written_lines = recorder.lines[1].split('\n')
+        self.assertEqual(3, len(written_lines))
+        self.assertEqual('-' * 10, written_lines[0])
+        self.assertEqual('-' * 10, written_lines[1])
+        self.assertEqual('', written_lines[2])
