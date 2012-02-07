@@ -3,7 +3,7 @@
 # -- header -----------------------------------------------------------------------
 
 Name:		    okaara-lib
-Version:        1.0.2
+Version:        1.0.3
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
 
@@ -62,6 +62,11 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog -------------------------------------------------------------------
 
 %changelog
+* Mon Feb 06 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.3-1
+- Added download links (jason.dobies@redhat.com)
+- Added publish target (jason.dobies@redhat.com)
+- Make the build noarch (jason.dobies@redhat.com)
+
 * Mon Feb 06 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.2-1
 - Flushed out some unit tests (jason.dobies@redhat.com)
 - Fixed typo (jason.dobies@redhat.com)
