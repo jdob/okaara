@@ -65,18 +65,21 @@ make them available in the test verification step.
 
 For example, given the following UI::
 
-  value = # some value from somewhere
-  if value is True:
-    p.write('Entered value was acceptable', tag='success')
-  else:
-    p.write('Invalid value, exiting', tag='error')
+  def validate(value):
+    if value > 0:
+      p.write('Entered value was acceptable', tag='success')
+    else:
+      p.write('Invalid value, exiting', tag='error')
 
 In the test case for this UI, recording of tags would be enabled and the test
 would verify the correct output was displayed by checking the tags::
 
   p = Prompt(record_tags=True)
-  # Pass p to the code being tested
+  client = MyClient(p)
+
+  client.validate(3)
   self.assertEqual('success', p.get_read_tags()[0])
+
 
 Testing Input
 ^^^^^^^^^^^^^
