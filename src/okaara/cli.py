@@ -43,7 +43,7 @@ class NoCatchErrorParser(OptionParser):
     def exit(self, status=0, msg=None):
         raise CommandUsage()
 
-class Option():
+class Option:
     """
     Represents an input to a command, either optional or required.
     """
@@ -63,7 +63,7 @@ class Flag(Option):
     def __init__(self, name, description):
         Option.__init__(self, name, description, False)
     
-class Command():
+class Command:
     """
     Represents something that should be executed by the CLI. These nodes will be leaves
     in the CLI tree. Each command is tied to a single python method and will invoke that
@@ -139,7 +139,7 @@ class Command():
         options, remaining_args = parser.parse_args(args)
         return dict(options.__dict__)
             
-class Section():
+class Section:
     """
     Represents a division of commands in the CLI. Sections may contain other sections, which
     creates a string of arguments used to get to a command (think namespaces).
@@ -225,7 +225,7 @@ class Section():
         if self.commands.has_key(name):
             raise InvalidStructure()
 
-class Cli():
+class Cli:
     """
     Representation of the CLI being created. Coders should create an instance of this class
     as the basis for the CLI. At that point, calling add_* methods will return the nodes/leaves
@@ -386,7 +386,7 @@ class Cli():
 
         # If we've recursed so much that we ran out of arguments, we haven't found a command yet,
         # so we return the deepest section we found
-        if len(args) == 0:
+        if len(args) is 0:
             return base_section, args[1:]
 
         find_me = args[0]
