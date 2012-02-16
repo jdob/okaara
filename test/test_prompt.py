@@ -114,7 +114,7 @@ class PromptTest(unittest.TestCase):
         prompt = Prompt()
 
         # Test
-        wrapped = prompt._chop('Spiderman', 3)
+        wrapped = prompt.wrap('Spiderman', 3)
 
         # Verify
         pieces = wrapped.split('\n')
@@ -130,7 +130,7 @@ class PromptTest(unittest.TestCase):
         prompt = Prompt()
 
         # Test
-        wrapped = prompt._chop('Green Goblin', 100)
+        wrapped = prompt.wrap('Green Goblin', 100)
 
         # Verify
         pieces = wrapped.split('\n')
@@ -146,7 +146,7 @@ class PromptTest(unittest.TestCase):
         prompt = Prompt()
 
         # Test
-        wrapped = prompt._chop('Electro', None)
+        wrapped = prompt.wrap('Electro', None)
 
         # Verify
         pieces = wrapped.split('\n')

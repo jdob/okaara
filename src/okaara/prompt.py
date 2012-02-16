@@ -142,7 +142,7 @@ class Prompt:
             else:
                 raise e
 
-    def write(self, content, new_line=True, color=None, tag=None):
+    def write(self, content, new_line=True, center=False, color=None, tag=None):
         """
         Writes content to the prompt's output stream.
 
@@ -150,7 +150,9 @@ class Prompt:
         :type  content: string
         """
         self._record_tag(TAG_WRITE, tag)
-        content = self._chop(content, self.wrap_width)
+        content = self.wrap(content, self.wrap_width)
+
+        if center: content = self.center(content)
 
         if color is not None: content = self.color(content, color)
 
@@ -197,7 +199,7 @@ class Prompt:
         """
 
         if width is None:
-            if self.wrap_width is None:
+            if self.wrap_width is None or self.wrap_width is WIDTH_TERMINAL:
                 width = self.terminal_size()[0]
             else:
                 width = self.wrap_width
@@ -207,6 +209,30 @@ class Prompt:
         else:
             spacer = ' ' * ( (width - len(text)) / 2)
             return spacer + text
+
+    def wrap(self, content, wrap_width, left_indent=0, right_indent=0):
+        """
+        If the wrap_width is specified, this call will introduce \n characters
+        to maintain that width.
+        """
+        if wrap_width is None:
+            return content
+
+        if wrap_width is WIDTH_TERMINAL:
+            wrap_width = self.terminal_size()[0]
+
+        wrapped_content = ''
+        remainder = content[:]
+        while True:
+            chopped = remainder[:wrap_width]
+            remainder = remainder[wrap_width:].lstrip()
+
+            wrapped_content += chopped
+
+            if len(remainder) is 0:
+                return wrapped_content
+            else:
+                wrapped_content += '\n'
 
     def move(self, direction):
         """
@@ -700,30 +726,6 @@ class Prompt:
         return w
 
     # -- private --------------------------------------------------------------
-
-    def _chop(self, content, wrap_width):
-        """
-        If the wrap_width is specified, this call will introduce \n characters
-        to maintain that width.
-        """
-        if wrap_width is None:
-            return content
-
-        if wrap_width is WIDTH_TERMINAL:
-            wrap_width = self.terminal_size()[0]
-
-        wrapped_content = ''
-        remainder = content[:]
-        while True:
-            chopped = remainder[:wrap_width]
-            remainder = remainder[wrap_width:]
-
-            wrapped_content += chopped
-
-            if len(remainder) is 0:
-                return wrapped_content
-            else:
-                wrapped_content += '\n'
 
     def _is_range(self, input, selectable_item_count):
         """
