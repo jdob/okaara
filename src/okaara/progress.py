@@ -20,7 +20,8 @@ import okaara.prompt
 
 class ProgressBar:
 
-    def __init__(self, prompt, width=40, show_trailing_percentage=True, fill='=', left_tick='[', right_tick=']'):
+    def __init__(self, prompt, width=40, show_trailing_percentage=True, fill='=', left_tick='[', right_tick=']',
+                 in_progress_color=None, completed_color=None):
         """
         :param prompt: prompt instance to write to
         :type  prompt: :py:class:`okaara.prompt.Prompt`
@@ -43,6 +44,15 @@ class ProgressBar:
 
         :param right_tick: displayed on the right side of the progress bar
         :type  right_tick: str
+
+        :param in_progress_color: color to render the progress bar while it is
+               incomplete (will also be used for completed bar if completed_color
+               isn't specified)
+        :type  in_progress_color: str
+
+        :param completed_color: color to render the progress bar once it is
+               completely filled
+        :type  completed_color: str
         """
         self.prompt = prompt
 
@@ -52,6 +62,9 @@ class ProgressBar:
         self.fill = fill
         self.left_tick = left_tick
         self.right_tick = right_tick
+
+        self.in_progress_color = in_progress_color
+        self.completed_color = completed_color
 
         self.previous_lines_written = 0
 
@@ -81,7 +94,14 @@ class ProgressBar:
         if self.show_trailing_percentage:
             fill_bar += ' %s%%' % int(percentage * 100)
 
-        self.prompt.write(fill_bar)
+        # Determine the coloring if applicable
+        bar_color = None
+        if self.in_progress_color is not None:
+            bar_color = self.in_progress_color
+            if fill_count == total_fill_width:
+                bar_color = self.completed_color
+
+        self.prompt.write(fill_bar, color=bar_color)
 
         if message is not None:
             self.prompt.write(message)
@@ -131,7 +151,8 @@ class Spinner:
 
     DEFAULT_SEQUENCE = '- \ | /'.split()
 
-    def __init__(self, prompt, sequence=DEFAULT_SEQUENCE, left_tick='[', right_tick=']'):
+    def __init__(self, prompt, sequence=DEFAULT_SEQUENCE, left_tick='[', right_tick=']',
+                 in_progress_color=None, completed_color=None):
         """
         :param prompt: prompt instance to write to
         :type  prompt: L{Prompt}
@@ -145,6 +166,13 @@ class Spinner:
         :param right_tick: displayed on the right side of the spinner
         :type  right_tick: str
 
+        :param in_progress_color: color to render the spinner while it is
+               incomplete (will also be used for completed bar if completed_color
+               isn't specified)
+        :type  in_progress_color: str
+
+        :param completed_color: color to render the spinner once it is completely filled
+        :type  completed_color: str
         """
         self.prompt = prompt
 
@@ -152,11 +180,18 @@ class Spinner:
         self.left_tick = left_tick
         self.right_tick = right_tick
 
+        self.in_progress_color = in_progress_color
+        self.completed_color = completed_color
+
         self.counter = 0
 
-    def spin(self):
+    def spin(self, finished=False):
         """
         Renders the next image in the spinner sequence.
+
+        :param finished: if true, the spinner will apply coloring based on
+               the completed_color field; defaults to false
+        :param finished: bool
         """
 
         if self.counter > 0:
@@ -167,7 +202,15 @@ class Spinner:
         self.counter += 1
 
         output = '%s%s%s' % (self.left_tick, self.sequence[index], self.right_tick)
-        self.prompt.write(output)
+
+        color = None
+        if self.in_progress_color is not None:
+            color = self.in_progress_color
+
+            if finished and self.completed_color is not None:
+                color = self.completed_color
+
+        self.prompt.write(output, color=color)
 
 # -----------------------------------------------------------------------------
 
@@ -196,7 +239,8 @@ if __name__ == '__main__':
     p.write('Completed first progress bar example')
     p.write('')
 
-    pb = ProgressBar(p, fill='*', left_tick='-<', right_tick='>-', show_trailing_percentage=False)
+    pb = ProgressBar(p, fill='*', left_tick='-<', right_tick='>-', show_trailing_percentage=False,
+                     in_progress_color=okaara.prompt.COLOR_LIGHT_YELLOW, completed_color=okaara.prompt.COLOR_LIGHT_GREEN)
 
     total = 17
     for i in range(0, total + 1):
@@ -229,11 +273,14 @@ if __name__ == '__main__':
     p.write('')
 
     sequence = '! @ # $ %'.split()
-    spinner = Spinner(p, sequence=sequence, left_tick='{', right_tick='}')
+    spinner = Spinner(p, sequence=sequence, left_tick='{', right_tick='}',
+                      in_progress_color=okaara.prompt.COLOR_LIGHT_YELLOW, completed_color=okaara.prompt.COLOR_LIGHT_GREEN)
 
     total = 10
     for i in range(0, total):
-        spinner.spin()
+        finished = i == (total - 1)
+
+        spinner.spin(finished=finished)
         time.sleep(.25)
 
     p.write('Completed second spinner example')
