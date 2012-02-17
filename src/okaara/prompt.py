@@ -151,6 +151,8 @@ class Prompt:
         :type  content: string
         """
         self._record_tag(TAG_WRITE, tag)
+
+        content = str(content)
         content = self.wrap(content)
 
         if center: content = self.center(content)
