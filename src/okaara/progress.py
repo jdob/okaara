@@ -109,7 +109,11 @@ class ProgressBar:
         # Save the number of lines written for the next iteration
         message_lines = 0
         if message is not None:
-            message_lines = len(message.split('\n'))
+            # It's possible the write call to the message above will have wrapped
+            # the message. We need to know how many lines the *wrapped* message
+            # occupied so we backtrack the correct number of lines. 
+            wrapped = self.prompt.wrap(message)
+            message_lines = len(wrapped.split('\n'))
 
         self.previous_lines_written = 1 + message_lines
 
