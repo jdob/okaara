@@ -7,6 +7,7 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import copy
 import fcntl
 import getpass
 import logging
@@ -150,7 +151,7 @@ class Prompt:
         :type  content: string
         """
         self._record_tag(TAG_WRITE, tag)
-        content = self.wrap(content, self.wrap_width)
+        content = self.wrap(content)
 
         if center: content = self.center(content)
 
@@ -196,6 +197,9 @@ class Prompt:
 
         :param width: width to center the text between
         :type  width: int
+
+        :return: string with spaces padding the left to center it
+        :rtype:  str
         """
 
         if width is None:
@@ -210,29 +214,77 @@ class Prompt:
             spacer = ' ' * ( (width - len(text)) / 2)
             return spacer + text
 
-    def wrap(self, content, wrap_width, left_indent=0, right_indent=0):
+    def wrap(self, content, wrap_width=None):
         """
         If the wrap_width is specified, this call will introduce \n characters
         to maintain that width.
         """
+
+        # If it's not overridden, use the instance-configured wrap width
+        if wrap_width is None:
+            wrap_width = self.wrap_width
+
+        # If the instance isn't configured with a wrap width, we're done
         if wrap_width is None:
             return content
 
+        # If the instance is configured to dynamically calculate it based on
+        # the terminal width, figure that value out now
         if wrap_width is WIDTH_TERMINAL:
             wrap_width = self.terminal_size()[0]
 
-        wrapped_content = ''
-        remainder = content[:]
+        # Actual splitting algorithm
+        def _rightmost_space_index(str):
+            for i in range(len(str) - 1, -1, -1):
+                if str[i] == ' ' : return i
+            return None
+
+        lines = [] # running track of split apart lines; assemble at the end
+        content = copy.copy(content)
+
         while True:
-            chopped = remainder[:wrap_width]
-            remainder = remainder[wrap_width:].lstrip()
+            # If there's nothing left, we're done
+            if len(content) is 0:
+                break
 
-            wrapped_content += chopped
+            # Strip off any leading whitespace to left justify the new line
+            content = content.lstrip()
 
-            if len(remainder) is 0:
-                return wrapped_content
-            else:
-                wrapped_content += '\n'
+            # Ideal situation is the text fills the width
+            end_index = wrap_width
+            chunk = content[:end_index]
+
+            # If this is the last chunk left, we're done
+            if end_index >= len(content):
+                lines.append(chunk)
+                break
+
+            # If the next character is a space, we've broken at a good point
+            if end_index < len(content) and content[end_index] == ' ':
+                lines.append(chunk)
+                content = content[end_index:]
+                continue
+
+            # This is the ugly case. Backtrack to the right-most space and make
+            # that the new chunk.
+
+            # I'd like to use rpartition here, but for outside reasons I have
+            # to stay 2.4 compliant and that's a 2.5 method. Damn.
+
+            last_space_index = _rightmost_space_index(chunk)
+
+            # If we found a space we can backtrack to and split there, use that
+            # as the chunk. If not, just leave the split as is.
+            if last_space_index is not None:
+                end_index = last_space_index
+                chunk = content[:end_index]
+
+            lines.append(chunk)
+            content = content[end_index:]
+
+        assembled = '\n'.join(lines)
+
+        return assembled
 
     def move(self, direction):
         """
