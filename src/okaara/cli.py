@@ -7,9 +7,9 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-
 from optparse import OptionParser
-
+import os
+import sys
 
 # -- exceptions ----------------------------------------------------------------------
 
@@ -338,7 +338,9 @@ class Cli:
         if section.name != '':
             self.prompt.write('%s%s' % (' ' * indent, section.description))
         else:
-            self.prompt.write('Usage:')
+            launch_script = os.path.basename(sys.argv[0])
+            self.prompt.write('Usage: %s [SECTION, ..] COMMAND' % launch_script)
+            self.prompt.write('')
 
         if len(section.commands) > 0:
             for command in sorted(section.commands.values()):
