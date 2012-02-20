@@ -250,6 +250,18 @@ class Cli:
         """
         self.root_section.add_subsection(section)
 
+    def find_section(self, name):
+        """
+        Returns the subsection of this section with the given name.
+
+        :param name: required; name of the subsection to find
+        :type  name: string
+
+        :return: section object for the matching subsection if it exists; None otherwise
+        :rtype:  Section or None
+        """
+        return self.root_section.find_subsection(name)
+
     def run(self, args):
         """
         Driver for the CLI. The specified arguments will be parsed to determine which command
