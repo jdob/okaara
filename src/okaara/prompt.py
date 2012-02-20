@@ -813,14 +813,16 @@ class Prompt:
     def _record_tag(self, io, tag):
         """
         Stores the given tag in the prompt if it is configued to track them.
-        If the parameter is empty, an empty string will be recorded to indicate
-        the write call was made without a tag.
+        If tag is None, nothing is recorded.
+
+        :param io: flag indicating if it's recording a read or a write;
+               should be one of the TAG_* constants
+        :type  io: str
 
         :param tag: value passed into the write call
         :type  tag: object
         """
-
-        if not self.record_tags:
+        if not self.record_tags or tag is None:
             return
 
         # Store in a tuple with the io direction
