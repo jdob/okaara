@@ -21,7 +21,7 @@ import okaara.prompt
 class ProgressBar:
 
     def __init__(self, prompt, width=40, show_trailing_percentage=True, fill='=', left_tick='[', right_tick=']',
-                 in_progress_color=None, completed_color=None):
+                 in_progress_color=None, completed_color=None, render_tag=None):
         """
         :param prompt: prompt instance to write to
         :type  prompt: :py:class:`okaara.prompt.Prompt`
@@ -53,6 +53,10 @@ class ProgressBar:
         :param completed_color: color to render the progress bar once it is
                completely filled
         :type  completed_color: str
+
+        :param render_tag: if specified, when the bar itself is written to the
+               prompt it will pass this tag
+        :type  render_tag: object
         """
         self.prompt = prompt
 
@@ -65,6 +69,8 @@ class ProgressBar:
 
         self.in_progress_color = in_progress_color
         self.completed_color = completed_color
+
+        self.render_tag = render_tag
 
         self.previous_lines_written = 0
 
@@ -101,7 +107,7 @@ class ProgressBar:
             if fill_count == total_fill_width:
                 bar_color = self.completed_color
 
-        self.prompt.write(fill_bar, color=bar_color)
+        self.prompt.write(fill_bar, color=bar_color, tag=self.render_tag)
 
         if message is not None:
             self.prompt.write(message)
@@ -156,7 +162,7 @@ class Spinner:
     DEFAULT_SEQUENCE = '- \ | /'.split()
 
     def __init__(self, prompt, sequence=DEFAULT_SEQUENCE, left_tick='[', right_tick=']',
-                 in_progress_color=None, completed_color=None):
+                 in_progress_color=None, completed_color=None, spin_tag=None):
         """
         :param prompt: prompt instance to write to
         :type  prompt: L{Prompt}
@@ -177,6 +183,10 @@ class Spinner:
 
         :param completed_color: color to render the spinner once it is completely filled
         :type  completed_color: str
+
+        :param spin_tag: if specified, this tag will be passed to the write call
+               each time the spinner is updated
+        :type  spin_tag: object
         """
         self.prompt = prompt
 
@@ -186,6 +196,8 @@ class Spinner:
 
         self.in_progress_color = in_progress_color
         self.completed_color = completed_color
+
+        self.spin_tag = spin_tag
 
         self.counter = 0
 
@@ -214,7 +226,7 @@ class Spinner:
             if finished and self.completed_color is not None:
                 color = self.completed_color
 
-        self.prompt.write(output, color=color)
+        self.prompt.write(output, color=color, tag=self.spin_tag)
 
 # -----------------------------------------------------------------------------
 
