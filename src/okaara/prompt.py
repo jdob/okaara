@@ -418,12 +418,12 @@ class Prompt:
 
             if (a is None or a == '') and default_value is not None:
                 return default_value
-            
-            if not a.isdigit():
+
+            try:
+                i = int(a)
+            except ValueError:
                 self.write('Please enter a number')
                 continue
-
-            i = int(a)
 
             if not allow_negatives and i < 0:
                 self.write('Please enter a number greater than zero')
