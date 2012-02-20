@@ -243,14 +243,18 @@ class Prompt:
 
         lines = [] # running track of split apart lines; assemble at the end
         content = copy.copy(content)
+        first_pass = True
 
         while True:
             # If there's nothing left, we're done
             if len(content) is 0:
                 break
 
-            # Strip off any leading whitespace to left justify the new line
-            content = content.lstrip()
+            # Strip off any leading whitespace to left justify the new line;
+            # don't strip for the first pass through it in case the user indented
+            if not first_pass:
+                content = content.lstrip()
+                first_pass = False
 
             # Ideal situation is the text fills the width
             end_index = wrap_width
