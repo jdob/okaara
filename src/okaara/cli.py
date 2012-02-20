@@ -335,20 +335,29 @@ class Cli:
         :param step: number of spaces to increment the indent on each iteration into a section
         :type  step: int
         """
+        launch_script = os.path.basename(sys.argv[0])
         if section.name != '':
-            self.prompt.write('%s%s' % (' ' * indent, section.description))
+            self.prompt.write('Usage: %s %s [SUB_SECTION, ..] COMMAND' % (section.name, launch_script))
+            self.prompt.write(section.description)
+            self.prompt.write('')
         else:
-            launch_script = os.path.basename(sys.argv[0])
             self.prompt.write('Usage: %s [SECTION, ..] COMMAND' % launch_script)
             self.prompt.write('')
 
+        if len(section.subsections) > 0:
+            self.prompt.write('Available Sections:')
+            for subsection in sorted(section.subsections.values()):
+                self.prompt.write('%s%s - %s' % (' ' * (indent + step), subsection.name, subsection.description))
+#                self.prompt.write('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
+
+        if len(section.subsections) > 0 and len(section.commands) > 0:
+            self.prompt.write('')
+
         if len(section.commands) > 0:
+            self.prompt.write('Available Commands:')
             for command in sorted(section.commands.values()):
                 self.prompt.write('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
 
-        if len(section.subsections) > 0:
-            for subsection in sorted(section.subsections.values()):
-                self.prompt.write('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
 
     def _print_command_usage(self, command, missing_required=None, indent=0, step=4):
         """
