@@ -345,8 +345,7 @@ class Cli:
             self.prompt.write('')
 
         if len(section.subsections) > 0:
-            longest_name = reduce(lambda x, y: max(x, y), section.subsections)
-            max_width = len(longest_name)
+            max_width = reduce(lambda x, y: max(x, len(y)), section.subsections, 0)
             template = '%s' + '%-' + str(max_width) + 's - %s'
 
             self.prompt.write('Available Sections:')
@@ -358,8 +357,7 @@ class Cli:
             self.prompt.write('')
 
         if len(section.commands) > 0:
-            longest_name = reduce(lambda x, y: max(x, y), section.commands)
-            max_width = len(longest_name)
+            max_width = reduce(lambda x, y: max(x, len(y)), section.commands, 0)
             template = '%s' + '%-' + str(max_width) + 's - %s'
 
             self.prompt.write('Available Commands:')
