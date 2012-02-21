@@ -139,6 +139,7 @@ class Prompt:
             return r
         except (EOFError, KeyboardInterrupt), e:
             if interruptable:
+                self.write('') # the ^C won't cause a line break but we probably want one
                 return ABORT
             else:
                 raise e
@@ -420,6 +421,9 @@ class Prompt:
         """
         while True:
             a = self.prompt(question, allow_empty=default_value is not None, interruptable=interruptable)
+
+            if a is ABORT:
+                return a
 
             if (a is None or a == '') and default_value is not None:
                 return default_value
@@ -742,6 +746,7 @@ class Prompt:
         while answer is None or answer.strip() == '':
             answer = self.read(question, interruptable=interruptable)
             if allow_empty: break
+            if answer is ABORT: break
 
         return answer
 
