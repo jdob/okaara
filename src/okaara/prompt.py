@@ -254,6 +254,7 @@ class Prompt:
             # don't strip for the first pass through it in case the user indented
             if not first_pass:
                 content = content.lstrip()
+            else:
                 first_pass = False
 
             # Ideal situation is the text fills the width
