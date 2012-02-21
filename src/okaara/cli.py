@@ -345,18 +345,26 @@ class Cli:
             self.prompt.write('')
 
         if len(section.subsections) > 0:
+            longest_name = reduce(lambda x, y: max(x, y), section.subsections)
+            max_width = len(longest_name)
+            template = '%s' + '%-' + str(max_width) + 's - %s'
+
             self.prompt.write('Available Sections:')
             for subsection in sorted(section.subsections.values()):
-                self.prompt.write('%s%s - %s' % (' ' * (indent + step), subsection.name, subsection.description))
+                self.prompt.write(template % (' ' * (indent + step), subsection.name, subsection.description))
 #                self.prompt.write('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
 
         if len(section.subsections) > 0 and len(section.commands) > 0:
             self.prompt.write('')
 
         if len(section.commands) > 0:
+            longest_name = reduce(lambda x, y: max(x, y), section.commands)
+            max_width = len(longest_name)
+            template = '%s' + '%-' + str(max_width) + 's - %s'
+
             self.prompt.write('Available Commands:')
             for command in sorted(section.commands.values()):
-                self.prompt.write('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
+                self.prompt.write(template % (' ' * (indent + step), command.name, command.description))
 
 
     def _print_command_usage(self, command, missing_required=None, indent=0, step=4):
