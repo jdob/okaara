@@ -74,11 +74,13 @@ class Command:
     in the CLI tree. Each command is tied to a single python method and will invoke that
     method with whatever arguments follow it.
     """
-    def __init__(self, name, description, method):
+    def __init__(self, name, description, method, parser=None):
         self.name = name
         self.description = description
         self.method = method
         self.options = []
+
+        self.parser = None
 
     def __str__(self):
         return 'Command [%s]' % self.name
@@ -130,7 +132,7 @@ class Command:
         specified in this fashion.
 
         :param option: option (or flag) to add to the command
-        :type  option: L{Option} or L{Flag}
+        :type  option: Option
         """
         self.options.append(option)
 
@@ -141,22 +143,37 @@ class Command:
         :return: mapping of argument to value
         :rtype:  dict
         """
-        parser = NoCatchErrorParser()
 
-        for o in self.options:
-            if isinstance(o, Flag):
-                action = 'store_true'
-            else:
-                if o.allow_multiple:
-                    action = 'append'
+        # If there are no options configured and the dev has not explicitly
+        # provided a parser, skip the parsing entirely. This is
+        # to support a case where the dev wants to allow undefined at code-time
+        # arguments beginning with -- to reach the command. If this isn't here,
+        # the parser will complain about unexpected options.
+        if len(self.options) is 0 and self.parser is None:
+            return input_args, {}
+
+        # If a specific parser is specified, don't bother creating our own based
+        # on added options. This is a bypass in case the user doesn't want to
+        # use the provided abstraction.
+        parser = self.parser
+
+        if parser is None:
+            parser = NoCatchErrorParser()
+
+            for o in self.options:
+                if isinstance(o, Flag):
+                    action = 'store_true'
                 else:
-                    action = 'store'
+                    if o.allow_multiple:
+                        action = 'append'
+                    else:
+                        action = 'store'
 
-            name_list = [o.name]
-            if o.aliases is not None:
-                name_list += o.aliases
+                name_list = [o.name]
+                if o.aliases is not None:
+                    name_list += o.aliases
 
-            parser.add_option(*name_list, dest=o.name, help=o.description, action=action)
+                parser.add_option(*name_list, dest=o.name, help=o.description, action=action)
 
         options, remaining_args = parser.parse_args(input_args)
         return remaining_args, options.__dict__
@@ -182,7 +199,7 @@ class Section:
         continue parsing for other subsections or commands.
 
         :param section: section instance to add
-        :type  section: L{Section}
+        :type  section: Section
         """
         self._verify_new_structure(section.name)
         self.subsections[section.name] = section
@@ -194,7 +211,7 @@ class Section:
         identify this command will be passed to the command's execution itself.
 
         :param command: command object to add
-        :type  command: L{Command}
+        :type  command: Command
         """
         self._verify_new_structure(command.name)
         self.commands[command.name] = command
@@ -207,7 +224,7 @@ class Section:
         :type  name: string
 
         :return: section object for the matching subsection if it exists; None otherwise
-        :rtype:  L{Section} or None
+        :rtype:  Section
         """
         if self.subsections.has_key(name):
             return self.subsections[name]
@@ -222,7 +239,7 @@ class Section:
         :type  name: string
 
         :return: command object for the matching command if it exists; None otherwise
-        :rtype:  L{Command} or None
+        :rtype:  Command
         """
         if self.commands.has_key(name):
             return self.commands[name]
@@ -235,7 +252,7 @@ class Section:
         (subsection or command) with the given name.
 
         :param name: name of the subsection/command to look for
-        :type  name:  string
+        :type  name: string
 
         :raise InvalidStructure: if there is an entity with the given name
         """
@@ -268,7 +285,7 @@ class Cli:
         continue parsing for other subsections or commands.
 
         :param section: section instance to add
-        :type  section: L{Section}
+        :type  section: Section
         """
         self.root_section.add_subsection(section)
 
@@ -280,7 +297,7 @@ class Cli:
         :type  name: string
 
         :return: section object for the matching subsection if it exists; None otherwise
-        :rtype:  Section or None
+        :rtype:  Section
         """
         return self.root_section.find_subsection(name)
 
@@ -291,7 +308,7 @@ class Cli:
         the CLI using the add_* calls, this method should be run to do the actual work.
 
         :param args: defines the command being invoked and any arguments to it
-        :type  args: list of string
+        :type  args: list
         """
         command_or_section, remaining_args = self._find_closest_match(self.root_section, args)
 
