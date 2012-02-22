@@ -47,10 +47,15 @@ class Option:
     """
     Represents an input to a command, either optional or required.
     """
-    def __init__(self, name, description, required=True):
+    def __init__(self, name, description, required=True, allow_multiple=False, aliases=None):
         self.name = name
         self.description = description
         self.required = required
+        self.allow_multiple = allow_multiple
+
+        if aliases is not None and not isinstance(aliases, (list, tuple)):
+            aliases = [aliases]
+        self.aliases = aliases
 
     def __str__(self):
         return 'Option [%s]' % self.name
@@ -60,8 +65,8 @@ class Flag(Option):
     Specific form of an option that does not take a value; it is meant to be either included
     in the command or excluded.
     """
-    def __init__(self, name, description):
-        Option.__init__(self, name, description, False)
+    def __init__(self, name, description, aliases=None):
+        Option.__init__(self, name, description, required=False, allow_multiple=False, aliases=aliases)
     
 class Command:
     """
@@ -89,12 +94,12 @@ class Command:
         """
 
         # Parse the command arguments into a dictionary
-        arg_dict = self._parse_arguments(args)
+        arg_list, kwarg_dict = self._parse_arguments(args)
 
         # Make sure all of the required arguments have been specified
         missing_required = [o for o in self.options if o.required and
-                                                       (not arg_dict.has_key(o.name) or
-                                                       arg_dict[o.name] is None)]
+                                                       (not kwarg_dict.has_key(o.name) or
+                                                       kwarg_dict[o.name] is None)]
         if len(missing_required) > 0:
             raise CommandUsage(missing_required)
 
@@ -102,11 +107,21 @@ class Command:
         # explicitly be set to false. Iterate through each flag explicitly setting the
         # value to false if it was not specified
         for o in self.options:
-            if isinstance(o, Flag):
-                if arg_dict[o.name] is None:
-                    arg_dict[o.name] = False
+            if isinstance(o, Flag) and kwarg_dict[o.name] is None:
+                kwarg_dict[o.name] = False
 
-        self.method(**arg_dict)
+        # Clean up option names
+        clean_kwargs = {}
+        for key in kwarg_dict:
+            if key.startswith('--'):
+                clean_key = key[2:]
+            elif key.startswith('-'):
+                clean_key = key[1:]
+            else:
+                clean_key = key
+            clean_kwargs[clean_key] = kwarg_dict[key]
+
+        self.method(*arg_list, **clean_kwargs)
 
     def add_option(self, option):
         """
@@ -119,7 +134,7 @@ class Command:
         """
         self.options.append(option)
 
-    def _parse_arguments(self, args):
+    def _parse_arguments(self, input_args):
         """
         Parses the arguments passed into this command based on the configured options.
 
@@ -132,12 +147,19 @@ class Command:
             if isinstance(o, Flag):
                 action = 'store_true'
             else:
-                action = 'store'
+                if o.allow_multiple:
+                    action = 'append'
+                else:
+                    action = 'store'
 
-            parser.add_option(o.name, dest=o.name, help=o.description, action=action)
+            name_list = [o.name]
+            if o.aliases is not None:
+                name_list += o.aliases
 
-        options, remaining_args = parser.parse_args(args)
-        return dict(options.__dict__)
+            parser.add_option(*name_list, dest=o.name, help=o.description, action=action)
+
+        options, remaining_args = parser.parse_args(input_args)
+        return remaining_args, options.__dict__
             
 class Section:
     """
@@ -385,12 +407,27 @@ class Cli:
 
         self.prompt.write('%s%s: %s' % (' ' * indent, command.name, command.description))
 
+        def _assemble_triggers(option):
+            all_triggers = [option.name]
+            if option.aliases is not None:
+                all_triggers += option.aliases
+            all_triggers = ', '.join(all_triggers)
+            return all_triggers
+
         if len(command.options) > 0:
+
+            # Calculate the longest trigger up front so we know the alignment width
+            max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), command.options, 0)
+
             for o in command.options:
+                triggers = _assemble_triggers(o)
+
+                # Generate template
+                template = '%s' + '%-' + str(max_width) + 's - %s'
                 if o.required:
-                    self.prompt.write('%s%s - %s (required)' % (' ' * (indent + step), o.name, o.description))
-                else:
-                    self.prompt.write('%s%s - %s' % (' ' * (indent + step), o.name, o.description))
+                    template += ' (required)'
+
+                self.prompt.write(template % (' ' * (indent + step), triggers, o.description))
 
         if missing_required:
             self.prompt.write('')
