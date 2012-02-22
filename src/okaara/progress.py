@@ -200,8 +200,9 @@ class Spinner:
         self.spin_tag = spin_tag
 
         self.counter = 0
+        self.previous_lines_written = 0
 
-    def spin(self, finished=False):
+    def next(self, message=None, finished=False):
         """
         Renders the next image in the spinner sequence.
 
@@ -211,7 +212,7 @@ class Spinner:
         """
 
         if self.counter > 0:
-            self.prompt.move(okaara.prompt.MOVE_UP % 1)
+            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
             self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
 
         index = self.counter % len(self.sequence)
@@ -228,10 +229,23 @@ class Spinner:
 
         self.prompt.write(output, color=color, tag=self.spin_tag)
 
+        if message is not None:
+            self.prompt.write(message)
+
+        message_lines = 0
+        if message is not None:
+            # It's possible the write call to the message above will have wrapped
+            # the message. We need to know how many lines the *wrapped* message
+            # occupied so we backtrack the correct number of lines.
+            wrapped = self.prompt.wrap(message)
+            message_lines = len(wrapped.split('\n'))
+
+        self.previous_lines_written = 1 + message_lines
+
 # -----------------------------------------------------------------------------
 
-if __name__ == '__main__':
 
+def demo():
     import time
     import okaara.prompt
 
@@ -282,7 +296,7 @@ if __name__ == '__main__':
 
     total = 10
     for i in range(0, total):
-        spinner.spin()
+        spinner.next()
         time.sleep(.25)
 
     p.write('Completed first spinner example')
@@ -296,7 +310,25 @@ if __name__ == '__main__':
     for i in range(0, total):
         finished = i == (total - 1)
 
-        spinner.spin(finished=finished)
+        spinner.next(finished=finished)
         time.sleep(.25)
 
     p.write('Completed second spinner example')
+
+if __name__ == '__main__':
+
+    import time
+    import okaara.prompt
+
+    p = okaara.prompt.Prompt()
+
+    s = Spinner(p)
+
+    for i in range(0, 20):
+
+        message = 'Step: %d' % i
+        if i % 3 is 0:
+            message += '\nSecond line in message'
+
+        s.next(message=message)
+        time.sleep(.2)
