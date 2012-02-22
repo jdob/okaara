@@ -15,3 +15,9 @@ Spinner Class APIs
    :members:
    :special-members:
 
+ThreadedSpinner Class APIs
+--------------------------
+
+.. autoclass:: okaara.progress.ThreadedSpinner
+   :members:
+   :special-members:

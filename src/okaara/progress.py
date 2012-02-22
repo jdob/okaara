@@ -15,6 +15,8 @@ current state.
 """
 
 import math
+import threading
+import time
 
 import okaara.prompt
 
@@ -211,7 +213,7 @@ class Spinner:
         :param finished: bool
         """
 
-        if self.counter > 0:
+        if self.previous_lines_written > 0:
             self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
             self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
 
@@ -242,13 +244,106 @@ class Spinner:
 
         self.previous_lines_written = 1 + message_lines
 
+    def iterator(self, iterable):
+        """
+        Wraps an iterator to automatically render the next step in the spinner
+        sequence at each pass through it.
+
+        :param iterable: iterator to wrap
+        :type  iterable: iterator
+
+        :return: iterator that will draw contents from the supplied iterator
+                 and automatically update the progress bar
+        :rtype:  iterator
+        """
+
+        for item in iterable:
+            yield item
+            self.next()
+
+class ThreadedSpinner(Spinner):
+    """
+    Renders a spinner in a separate thread at a regular interval. This is useful
+    in cases where each step in the actual code executing while the spinner is
+    running takes a variable amount of time; this will mask those differences
+    from the user and result in a smooth spin.
+
+    Once instantiated, the start() method is used to begin the rendering. Each
+    step is rendered at a rate specified in refresh_seconds in the constructor.
+    The spinner will continue to render until stop() is called. Callers should
+    be careful to not use the prompt instance while the spinner is running.
+
+    Due to its behavior, the iterator() method in the Spinner base class is
+    not supported.
+    """
+
+    def __init__(self, prompt, refresh_seconds=.5, sequence=Spinner.DEFAULT_SEQUENCE,
+                 left_tick='[', right_tick=']', in_progress_color=None,
+                 completed_color=None, spin_tag=None):
+        """
+        :param refresh_seconds: time in seconds between rendering each step in
+               the spinner's sequence
+        :type  refresh_seconds: float
+        """
+        Spinner.__init__(self, prompt, sequence, left_tick, right_tick,
+                         in_progress_color, completed_color, spin_tag)
+
+        self.refresh_seconds = refresh_seconds
+
+        self.running = False
+        self.lock = threading.Lock()
+
+    def start(self):
+        """
+        Causes the spinner to begin rendering steps. The rendering will be
+        done through the prompt supplied in the constructor however it will be
+        done in a separate thread. This call will immediately return and the
+        spinning will begin.
+
+        Callers should be careful to call stop() before attempting to use the
+        prompt again. Bad things would happen if the spinner thread continued
+        to attempt to update while other content was written to the prompt.
+
+        If the spinner is already running from a previous call to start(), this
+        call has no effect.
+        """
+        if self.running:
+            return
+
+        # Reset the state in case it's been started/stopped before
+        self.previous_lines_written = 0
+
+        self.running = True
+        self.lock.acquire()
+
+        thread = threading.Thread(target=self._run)
+        thread.start()
+
+    def stop(self):
+        """
+        Causes the spinner to stop spinning. The thread is not immediately
+        killed but instead allowed to have trigger one more step in the
+        sequence. This call will block until that step has been rendered. This
+        shouldn't be noticable except in cases of a very high value for
+        refresh_seconds.
+        """
+        self.running = False
+        self.lock.acquire() # block until the thread finishes so the user knows its done
+        self.lock.release() # release so start() can be called again
+
+    def iterator(self, iterable):
+        raise NotImplementedError()
+
+    def _run(self):
+        while self.running:
+            self.next()
+            time.sleep(self.refresh_seconds)
+        self.lock.release()
+
 # -----------------------------------------------------------------------------
 
-
 def demo():
-    import time
     import okaara.prompt
-
     p = okaara.prompt.Prompt()
 
     pb = ProgressBar(p)
@@ -314,21 +409,34 @@ def demo():
         time.sleep(.25)
 
     p.write('Completed second spinner example')
+    p.write('')
 
-if __name__ == '__main__':
+    s = ThreadedSpinner(p, refresh_seconds=.1)
 
-    import time
+    p.write('Starting threaded spinner, spinner should keep moving while this thread sleeps')
+
+    s.start()
+    time.sleep(3) # spinner should keep moving
+    s.stop()
+
+    p.write('Threaded spinner stopped')
+    p.write('')
+
+def multi_call_demo():
     import okaara.prompt
-
     p = okaara.prompt.Prompt()
 
-    s = Spinner(p)
+    s = ThreadedSpinner(p, refresh_seconds=3)
 
-    for i in range(0, 20):
+    s.start()
+    time.sleep(.01)
+    s.stop()
+    p.write('Stopped 1')
 
-        message = 'Step: %d' % i
-        if i % 3 is 0:
-            message += '\nSecond line in message'
+    s.start()
+    time.sleep(.01)
+    s.stop()
+    p.write('Stopped 2')
 
-        s.next(message=message)
-        time.sleep(.2)
+if __name__ == '__main__':
+    demo()
