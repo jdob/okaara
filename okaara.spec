@@ -3,7 +3,7 @@
 # -- header -----------------------------------------------------------------------
 
 Name:		    okaara-lib
-Version:        1.0.4
+Version:        1.0.5
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
 
@@ -62,6 +62,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog -------------------------------------------------------------------
 
 %changelog
+* Mon Feb 27 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.5-1
+- Added remove section/command methods (jason.dobies@redhat.com)
+
 * Mon Feb 27 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.4-1
 - Added ThreadedSpinner class (jason.dobies@redhat.com)
 - Added message support to Spinner (jason.dobies@redhat.com)
