@@ -246,6 +246,32 @@ class Section:
         else:
             return None
 
+    def remove_subsection(self, name):
+        """
+        Removes the subsection with the given name. If there is no subsection
+        with the given name, this call does nothing (no error is raised).
+
+        :param name: name of the section when it was added
+        :type  name: str
+
+        :return: subsection instance if one was removed; None if it didn't exist
+        :rtype:  Section
+        """
+        return self.subsections.pop(name, None)
+
+    def remove_command(self, name):
+        """
+        Removes the command with the given name. If there is no command with
+        the given name, this call does nothing (no error is raised).
+
+        :param name: name of the command when it was added
+        :type  name: str
+
+        :return: command instance if one was removed; None if it didn't exist
+        :rtype:  Command
+        """
+        return self.commands.pop(name, None)
+
     def _verify_new_structure(self, name):
         """
         Integrity check to validate that the CLI has not been configured with an entity
@@ -300,6 +326,19 @@ class Cli:
         :rtype:  Section
         """
         return self.root_section.find_subsection(name)
+
+    def remove_section(self, name):
+        """
+        Removes the section with the given name. If no section exists with that
+        name, this call has no effect (no error is raised).
+
+        :param name: name of the section when it was added
+        :type  name: str
+
+        :return: subsection instance of one was removed; None otherwise
+        :rtype:  Section
+        """
+        return self.root_section.remove_subsection(name)
 
     def run(self, args):
         """
@@ -390,7 +429,6 @@ class Cli:
             self.prompt.write('Available Sections:')
             for subsection in sorted(section.subsections.values()):
                 self.prompt.write(template % (' ' * (indent + step), subsection.name, subsection.description))
-#                self.prompt.write('%s%-10s: %s' % (' ' * (indent + step), subsection.name, subsection.description))
 
         if len(section.subsections) > 0 and len(section.commands) > 0:
             self.prompt.write('')
