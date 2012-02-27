@@ -3,7 +3,7 @@
 # -- header -----------------------------------------------------------------------
 
 Name:		    okaara-lib
-Version:        1.0.3
+Version:        1.0.4
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
 
@@ -62,6 +62,42 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog -------------------------------------------------------------------
 
 %changelog
+* Mon Feb 27 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.4-1
+- Added ThreadedSpinner class (jason.dobies@redhat.com)
+- Added message support to Spinner (jason.dobies@redhat.com)
+- Added parser override ability to bypass okaara abstraction. Added parser skip
+  if no options are provided. (jason.dobies@redhat.com)
+- kwargs passed to commands have the -- stripped. Added support for aliases in
+  options. Added support for multiple values per option. Cleaned up usage
+  message for invalid arguments. (jason.dobies@redhat.com)
+- Max was doing alpha comparison instead of length (jason.dobies@redhat.com)
+- Played with alignment in cli usage (jason.dobies@redhat.com)
+- Abort-related fixes (jason.dobies@redhat.com)
+- Fixed first pass logic on wrapping (jason.dobies@redhat.com)
+- Don't strip off leading whitespace from the first line while wrapping; it's
+  probably intended. After that, we can't really guarantee much
+  (jason.dobies@redhat.com)
+- Tweaked usage to be light years better (jason.dobies@redhat.com)
+- Fixed usage output (jason.dobies@redhat.com)
+- Corrected logic for prompt number (jason.dobies@redhat.com)
+- Exposed find_section functionality in the CLI itself.
+  (jason.dobies@redhat.com)
+- No longer log non-tagged calls; it's too damn noisy (jason.dobies@redhat.com)
+- Added tag support for progress bar and spinner (jason.dobies@redhat.com)
+- Fix for the case where the progress bar's message wraps
+  (jason.dobies@redhat.com)
+- Call the content's __str__ in case the user is sloppy
+  (jason.dobies@redhat.com)
+- Made wrap functionality smart enough to not split words if possible
+  (jason.dobies@redhat.com)
+- Made wrap a first-class function and added center as an argument to write
+  (jason.dobies@redhat.com)
+- Added color to the progress widgets (jason.dobies@redhat.com)
+- Syntax cleanup for 2.4 (jason.dobies@redhat.com)
+- Small prompt clarifications (jason.dobies@redhat.com)
+- Changed publish to use rsync to make it quicker (jason.dobies@redhat.com)
+- Added better test example (jason.dobies@redhat.com)
+
 * Mon Feb 06 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.3-1
 - Added download links (jason.dobies@redhat.com)
 - Added publish target (jason.dobies@redhat.com)
