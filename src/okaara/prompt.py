@@ -144,17 +144,22 @@ class Prompt:
             else:
                 raise e
 
-    def write(self, content, new_line=True, center=False, color=None, tag=None):
+    def write(self, content, new_line=True, center=False, color=None, tag=None, skip_wrap=False):
         """
         Writes content to the prompt's output stream.
 
         :param content: content to display to the user
         :type  content: string
+
+        :param skip_wrap: if true, auto-wrapping won't be applied; defaults to false
+        :type  skip_wrap: bool
         """
         self._record_tag(TAG_WRITE, tag)
 
         content = str(content)
-        content = self.wrap(content)
+
+        if not skip_wrap:
+            content = self.wrap(content)
 
         if center: content = self.center(content)
 
@@ -217,7 +222,7 @@ class Prompt:
             spacer = ' ' * ( (width - len(text)) / 2)
             return spacer + text
 
-    def wrap(self, content, wrap_width=None):
+    def wrap(self, content, wrap_width=None, remaining_line_indent=0):
         """
         If the wrap_width is specified, this call will introduce \n characters
         to maintain that width.
@@ -252,9 +257,12 @@ class Prompt:
                 break
 
             # Strip off any leading whitespace to left justify the new line;
-            # don't strip for the first pass through it in case the user indented
+            # don't strip for the first pass through it in case the user indented.
+            # After stipping off any accidental whitespace, add in the indent
+            # for non-first lines.
             if not first_pass:
                 content = content.lstrip()
+                content = (' ' * remaining_line_indent) + content
             else:
                 first_pass = False
 

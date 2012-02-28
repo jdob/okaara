@@ -415,8 +415,8 @@ class Cli:
         """
         launch_script = os.path.basename(sys.argv[0])
         if section.name != '':
-            self.prompt.write('Usage: %s %s [SUB_SECTION, ..] COMMAND' % (section.name, launch_script))
-            self.prompt.write(section.description)
+            self.prompt.write('Usage: %s %s [SUB_SECTION, ..] COMMAND' % (launch_script, section.name))
+            self.prompt.write('Description: %s' % section.description)
             self.prompt.write('')
         else:
             self.prompt.write('Usage: %s [SECTION, ..] COMMAND' % launch_script)
@@ -428,7 +428,8 @@ class Cli:
 
             self.prompt.write('Available Sections:')
             for subsection in sorted(section.subsections.values()):
-                self.prompt.write(template % (' ' * (indent + step), subsection.name, subsection.description))
+                wrapped_description = self.prompt.wrap(subsection.description, remaining_line_indent=(indent + step + max_width + 3))
+                self.prompt.write(template % (' ' * (indent + step), subsection.name, wrapped_description), skip_wrap=True)
 
         if len(section.subsections) > 0 and len(section.commands) > 0:
             self.prompt.write('')
@@ -439,7 +440,8 @@ class Cli:
 
             self.prompt.write('Available Commands:')
             for command in sorted(section.commands.values()):
-                self.prompt.write(template % (' ' * (indent + step), command.name, command.description))
+                wrapped_description = self.prompt.wrap(command.description, remaining_line_indent=(indent + step + max_width + 3))
+                self.prompt.write(template % (' ' * (indent + step), command.name, wrapped_description), skip_wrap=True)
 
 
     def _print_command_usage(self, command, missing_required=None, indent=0, step=4):
