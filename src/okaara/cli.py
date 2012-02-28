@@ -399,7 +399,7 @@ class Cli:
             for subsection in sorted(base_section.subsections.values()):
                 self._recursive_print_section(subsection, indent=(indent + step), step=step)
 
-    def _print_section(self, section, indent=0, step=4):
+    def _print_section(self, section, indent=0, step=2):
         """
         Prints the direct children of a single section; this call will not recurse into the
         children and print their hierarchy.
