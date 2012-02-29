@@ -2,7 +2,7 @@
 
 # -- header -----------------------------------------------------------------------
 
-Name:		    okaara-lib
+Name:		    python-okaara
 Version:        1.0.5
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
