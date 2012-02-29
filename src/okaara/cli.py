@@ -366,7 +366,7 @@ class Cli:
             except CommandUsage, e:
                 self._print_command_usage(command_or_section, missing_required=e.missing_options)
 
-    def print_cli_map(self, indent=-4, step=4):
+    def print_cli_map(self, indent=-2, step=2, show_options=False):
         """
         Prints the structure of the CLI in a tree-like structure to indicate section ownership.
 
@@ -375,10 +375,14 @@ class Cli:
 
         :param step: number of spaces to increment the indent on each iteration into a section
         :type  step: int
-        """
-        self._recursive_print_section(self.root_section, indent=indent, step=step)
 
-    def _recursive_print_section(self, base_section, indent=-4, step=4):
+        :param show_options: if true, command options will be displayed; defaults
+               to false
+        :type  show_options: bool
+        """
+        self._recursive_print_section(self.root_section, indent=indent, step=step, show_options=show_options)
+
+    def _recursive_print_section(self, base_section, indent=-2, step=2, show_options=False):
         """
         Prints the contents of a section and all of its children (subsections and commands).
 
@@ -386,23 +390,32 @@ class Cli:
         :type  indent: int
 
         :param step: number of spaces to increment the indent on each iteration into a section
-        :type  step: int        
+        :type  step: int
+
+        :param show_options: if true, command options will be displayed; defaults
+               to false
+        :type  show_options: bool
         """
         # Need a way to not print the root section of the CLI, which doesn't represent
         # an actual user section, so a ghetto check is to make sure the name isn't blank
         if base_section.name != '':
-            self.prompt.write('%s%s: %s' % (' ' * indent, base_section.name, base_section.description))
+            wrapped_description = self.prompt.wrap(base_section.description, remaining_line_indent=(len(base_section.name) + 2 + indent))
+            self.prompt.write('%s%s: %s' % (' ' * indent, base_section.name, wrapped_description), skip_wrap=True)
 
         if len(base_section.commands) > 0:
+            max_width = reduce(lambda x, y: max(x, len(y)), base_section.commands, 0) + 1 # +1 for the : later
+            template = '%s%-' + str(max_width) + 's %s'
             for command in sorted(base_section.commands.values()):
-                self.prompt.write('%s%s - %s' % (' ' * (indent + step), command.name, command.description))
-                if len(command.options) > 0:
+                self.prompt.write(template % (' ' * (indent + step), command.name + ':', command.description))
+                if show_options and len(command.options) > 0:
                     for o in command.options:
-                        self.prompt.write('%s%s - %s' % (' ' * (indent + (step * 2)), o.name, o.description))
+                        self.prompt.write('%s%s: %s' % (' ' * (indent + (step * 2)), o.name, o.description))
 
         if len(base_section.subsections) > 0:
             for subsection in sorted(base_section.subsections.values()):
                 self._recursive_print_section(subsection, indent=(indent + step), step=step)
+
+        self.prompt.write('')
 
     def _print_section(self, section, indent=0, step=2):
         """
