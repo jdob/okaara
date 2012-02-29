@@ -7,7 +7,7 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from optparse import OptionParser, SUPPRESS_HELP
+from optparse import OptionParser
 import os
 import sys
 
