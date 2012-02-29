@@ -173,7 +173,7 @@ class Command:
                 if o.aliases is not None:
                     name_list += o.aliases
 
-                parser.add_option(*name_list, dest=o.name, help=o.description, action=action)
+                parser.add_option(dest=o.name, help=o.description, action=action, *name_list)
 
         options, remaining_args = parser.parse_args(input_args)
         return remaining_args, options.__dict__
