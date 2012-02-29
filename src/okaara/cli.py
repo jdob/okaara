@@ -7,7 +7,7 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from optparse import OptionParser
+from optparse import OptionParser, SUPPRESS_HELP
 import os
 import sys
 
@@ -42,6 +42,11 @@ class NoCatchErrorParser(OptionParser):
     """
     def exit(self, status=0, msg=None):
         raise CommandUsage()
+
+    def print_help(self, file=None):
+        # The CLI will take care of formatting the options for a --help call,
+        # so do nothing here.
+        pass
 
 class Option:
     """
@@ -444,7 +449,7 @@ class Cli:
                 self.prompt.write(template % (' ' * (indent + step), command.name, wrapped_description), skip_wrap=True)
 
 
-    def _print_command_usage(self, command, missing_required=None, indent=0, step=4):
+    def _print_command_usage(self, command, missing_required=None, indent=0, step=2):
         """
         Prints the details of a command, including all options that can be specified to it.
 
@@ -462,7 +467,8 @@ class Cli:
         :type  step: int
         """
 
-        self.prompt.write('%s%s: %s' % (' ' * indent, command.name, command.description))
+        self.prompt.write('%sCommand: %s' % (' ' * indent, command.name))
+        self.prompt.write('%sDescription: %s' % (' ' * indent, command.description))
 
         def _assemble_triggers(option):
             all_triggers = [option.name]
@@ -472,6 +478,8 @@ class Cli:
             return all_triggers
 
         if len(command.options) > 0:
+            self.prompt.write('')
+            self.prompt.write('Available Arguments:')
 
             # Calculate the longest trigger up front so we know the alignment width
             max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), command.options, 0)
@@ -484,7 +492,8 @@ class Cli:
                 if o.required:
                     template += ' (required)'
 
-                self.prompt.write(template % (' ' * (indent + step), triggers, o.description))
+                wrapped_description = self.prompt.wrap(o.description, remaining_line_indent=(indent + step + max_width + 3))
+                self.prompt.write(template % (' ' * (indent + step), triggers, wrapped_description), skip_wrap=True)
 
         if missing_required:
             self.prompt.write('')
