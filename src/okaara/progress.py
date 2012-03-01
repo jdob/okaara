@@ -295,20 +295,26 @@ class ThreadedSpinner(Spinner):
     not supported.
     """
 
-    def __init__(self, prompt, refresh_seconds=.5, sequence=Spinner.DEFAULT_SEQUENCE,
+    def __init__(self, prompt, refresh_seconds=.5, timeout_seconds=30, sequence=Spinner.DEFAULT_SEQUENCE,
                  left_tick='[', right_tick=']', in_progress_color=None,
                  completed_color=None, spin_tag=None):
         """
         :param refresh_seconds: time in seconds between rendering each step in
                the spinner's sequence
         :type  refresh_seconds: float
+
+        :param timeout_seconds: time in seconds after which the spinner will
+               automatically stop
         """
         Spinner.__init__(self, prompt, sequence, left_tick, right_tick,
                          in_progress_color, completed_color, spin_tag)
 
         self.refresh_seconds = refresh_seconds
+        self.timeout_seconds = timeout_seconds
 
         self.running = False
+        self.ellapsed_time = 0
+
         self.lock = threading.Lock()
 
     def start(self):
@@ -332,6 +338,8 @@ class ThreadedSpinner(Spinner):
         self.previous_lines_written = 0
 
         self.running = True
+        self.ellapsed_time = 0
+
         self.lock.acquire()
 
         thread = threading.Thread(target=self._run)
@@ -356,6 +364,11 @@ class ThreadedSpinner(Spinner):
         while self.running:
             self.next()
             time.sleep(self.refresh_seconds)
+            self.ellapsed_time += self.refresh_seconds
+
+            if self.ellapsed_time > self.timeout_seconds:
+                self.stop()
+        self.next(finished=True)
         self.lock.release()
 
 # -----------------------------------------------------------------------------
