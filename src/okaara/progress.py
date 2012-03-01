@@ -86,9 +86,7 @@ class ProgressBar:
         used to provide more information on the current step being rendered.
         """
 
-        if self.previous_lines_written > 0:
-            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
-            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
+        self.clear()
 
         # Generate bar
         total_fill_width = self.width - (len(self.left_tick) + len(self.right_tick)) # subtract the leading/trailing ticks
@@ -159,6 +157,17 @@ class ProgressBar:
 
             self.render(step + 1, total, message=message)
 
+    def clear(self):
+        """
+        Deletes anything rendered by the bar. This may be called after the
+        long-running task has finished to remove the bar from the screen.
+        This must be called before attemping to write anything new to the prompt.
+        """
+        if self.previous_lines_written > 0:
+            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
+            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
+
+
 class Spinner:
 
     DEFAULT_SEQUENCE = '- \ | /'.split()
@@ -213,9 +222,7 @@ class Spinner:
         :param finished: bool
         """
 
-        if self.previous_lines_written > 0:
-            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
-            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
+        self.clear()
 
         index = self.counter % len(self.sequence)
         self.counter += 1
@@ -260,6 +267,17 @@ class Spinner:
         for item in iterable:
             yield item
             self.next()
+
+    def clear(self):
+        """
+        Deletes anything rendered by the spinner. This may be called after the
+        long-running task has finished to remove the spinner from the screen.
+        This must be called before attemping to write anything new to the prompt.
+        """
+        if self.previous_lines_written > 0:
+            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
+            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
+
 
 class ThreadedSpinner(Spinner):
     """
@@ -394,6 +412,7 @@ def demo():
         spinner.next()
         time.sleep(.25)
 
+    spinner.clear()
     p.write('Completed first spinner example')
     p.write('')
 
