@@ -85,7 +85,7 @@ class Command:
         self.method = method
         self.options = []
 
-        self.parser = None
+        self.parser = parser
 
     def __str__(self):
         return 'Command [%s]' % self.name
