@@ -403,10 +403,17 @@ class Cli:
 
         if len(base_section.commands) > 0:
             max_width = reduce(lambda x, y: max(x, len(y)), base_section.commands, 0) + 1 # +1 for the : later
+
+            if section_color is not None:
+                max_width += len(section_color)
+                max_width += len(self.prompt.normal_color)
+
             template = '%s%-' + str(max_width) + 's %s'
+
             for command in sorted(base_section.commands.values()):
                 highlighted_name = self.prompt.color(command.name, command_color)
                 self.prompt.write(template % (' ' * (indent + step), highlighted_name + ':', command.description))
+
                 if show_options and len(command.options) > 0:
                     for o in command.options:
                         highlighted_name = self.prompt.color(o.name, command_color)
