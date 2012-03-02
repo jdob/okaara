@@ -366,7 +366,7 @@ class Cli:
             except CommandUsage, e:
                 self._print_command_usage(command_or_section, missing_required=e.missing_options)
 
-    def print_cli_map(self, indent=-2, step=2, show_options=False):
+    def print_cli_map(self, indent=-2, step=2, show_options=False, section_color=None, command_color=None):
         """
         Prints the structure of the CLI in a tree-like structure to indicate section ownership.
 
@@ -379,43 +379,49 @@ class Cli:
         :param show_options: if true, command options will be displayed; defaults
                to false
         :type  show_options: bool
-        """
-        self._recursive_print_section(self.root_section, indent=indent, step=step, show_options=show_options)
 
-    def _recursive_print_section(self, base_section, indent=-2, step=2, show_options=False):
+        :param section_color: if specified, section names will be highlighted with this color
+        :type  section_color: str
+
+        :param command_color: if specified, command names will be highlighted with this color
+        :type  command_color: str
+        """
+        self._recursive_print_section(self.root_section, indent=indent, step=step, show_options=show_options,
+                                      section_color=section_color, command_color=command_color)
+
+    def _recursive_print_section(self, base_section, indent=-2, step=2, show_options=False,
+                                 section_color=None, command_color=None):
         """
         Prints the contents of a section and all of its children (subsections and commands).
-
-        :param indent: number of spaces to indent each section
-        :type  indent: int
-
-        :param step: number of spaces to increment the indent on each iteration into a section
-        :type  step: int
-
-        :param show_options: if true, command options will be displayed; defaults
-               to false
-        :type  show_options: bool
         """
         # Need a way to not print the root section of the CLI, which doesn't represent
         # an actual user section, so a ghetto check is to make sure the name isn't blank
         if base_section.name != '':
             wrapped_description = self.prompt.wrap(base_section.description, remaining_line_indent=(len(base_section.name) + 2 + indent))
-            self.prompt.write('%s%s: %s' % (' ' * indent, base_section.name, wrapped_description), skip_wrap=True)
+            highlighted_name = self.prompt.color(base_section.name, section_color)
+            self.prompt.write('%s%s: %s' % (' ' * indent, highlighted_name, wrapped_description), skip_wrap=True)
 
         if len(base_section.commands) > 0:
             max_width = reduce(lambda x, y: max(x, len(y)), base_section.commands, 0) + 1 # +1 for the : later
             template = '%s%-' + str(max_width) + 's %s'
             for command in sorted(base_section.commands.values()):
-                self.prompt.write(template % (' ' * (indent + step), command.name + ':', command.description))
+                highlighted_name = self.prompt.color(command.name, command_color)
+                self.prompt.write(template % (' ' * (indent + step), highlighted_name + ':', command.description))
                 if show_options and len(command.options) > 0:
                     for o in command.options:
-                        self.prompt.write('%s%s: %s' % (' ' * (indent + (step * 2)), o.name, o.description))
+                        highlighted_name = self.prompt.color(o.name, command_color)
+                        self.prompt.write('%s%s: %s' % (' ' * (indent + (step * 2)), highlighted_name, o.description))
 
         if len(base_section.subsections) > 0:
             for subsection in sorted(base_section.subsections.values()):
-                self._recursive_print_section(subsection, indent=(indent + step), step=step)
+                self._recursive_print_section(subsection, indent=(indent + step), step=step,
+                                              section_color=section_color, command_color=command_color)
 
-        self.prompt.write('')
+        # Only put a blank line between highest level sections. This may not be
+        # perfect for deep nesting of sections, but I think in most cases this
+        # makes sense
+        if indent <= 0:
+            self.prompt.write('')
 
     def _print_section(self, section, indent=0, step=2):
         """
