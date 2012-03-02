@@ -186,7 +186,7 @@ class Prompt:
         """
 
         # Skip the wrapping if color is disabled at the instance level
-        if not self.enable_color:
+        if not self.enable_color or color is None:
             return text
 
         return '%s%s%s' % (color, text, self.normal_color)
