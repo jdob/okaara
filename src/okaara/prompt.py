@@ -292,8 +292,13 @@ class Prompt:
             # If we found a space we can backtrack to and split there, use that
             # as the chunk. If not, just leave the split as is.
             if last_space_index is not None:
-                end_index = last_space_index
-                chunk = content[:end_index]
+
+                # In the case of a remaining line indent, we need to make sure
+                # the right-most space isn't just the indent, otherwise we're
+                # going to loop indefinitely.
+                if remaining_line_indent is not None and last_space_index > remaining_line_indent:
+                    end_index = last_space_index
+                    chunk = content[:end_index]
 
             lines.append(chunk)
             content = content[end_index:]
