@@ -131,9 +131,10 @@ class Command:
         arg_list, kwarg_dict = self._parse_arguments(args)
 
         # Make sure all of the required arguments have been specified
-        missing_required = [o for o in self.options if o.required and
-                                                       (not kwarg_dict.has_key(o.name) or
-                                                       kwarg_dict[o.name] is None)]
+
+        missing_required = [o for o in self.all_options() \
+                            if o.required and (not kwarg_dict.has_key(o.name) or
+                                               kwarg_dict[o.name] is None)]
         if len(missing_required) > 0:
             raise CommandUsage(missing_required)
 
@@ -178,6 +179,19 @@ class Command:
         """
         self.option_groups.append(option_group)
 
+    def all_options(self):
+        """
+        Returns a single list of all options in the command, both directly
+        added and in a group.
+
+        :return: list of all Option instances in the command
+        :rtype:  list
+        """
+        all_options = list(self.options)
+        for g in self.option_groups:
+            all_options += g.options
+        return all_options
+
     def _parse_arguments(self, input_args):
         """
         Parses the arguments passed into this command based on the configured options.
@@ -194,11 +208,7 @@ class Command:
         if parser is None:
             parser = NoCatchErrorParser()
 
-            all_options = list(self.options)
-            for g in self.option_groups:
-                all_options += g.options
-
-            for o in all_options:
+            for o in self.all_options():
                 if isinstance(o, Flag):
                     action = 'store_true'
                 else:
