@@ -7,6 +7,7 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+
 from optparse import OptionParser
 import os
 import sys
@@ -72,7 +73,32 @@ class Flag(Option):
     """
     def __init__(self, name, description, aliases=None):
         Option.__init__(self, name, description, required=False, allow_multiple=False, aliases=aliases)
-    
+
+class OptionGroup:
+    """
+    Used purely for usage display purposes, options and flags added to a group
+    will be rendered in their own section. Their behavior is still the same
+    (i.e. they must still be unique across the command).
+    """
+
+    def __init__(self, name, description=None):
+        self.name = name
+        self.description = description
+
+        self.options = []
+
+    def add_option(self, option):
+        """
+        Adds an option that can be specified when executing this command. Options
+        added in this fashion should not be added explicitly to the command,
+        but rather the group is passed to the command and the options associated
+        in that way.
+
+        :param option: option (or flag) to add to the command
+        :type  option: Option
+        """
+        self.options.append(option)
+
 class Command:
     """
     Represents something that should be executed by the CLI. These nodes will be leaves
@@ -84,6 +110,7 @@ class Command:
         self.description = description
         self.method = method
         self.options = []
+        self.option_groups = []
 
         self.parser = parser
 
@@ -141,6 +168,16 @@ class Command:
         """
         self.options.append(option)
 
+    def add_option_group(self, option_group):
+        """
+        Adds an option group to the command. Option groups will be rendered in
+        the order they are added.
+
+        :param option_group: option group
+        :type  option_group: OptionGroup
+        """
+        self.option_groups.append(option_group)
+
     def _parse_arguments(self, input_args):
         """
         Parses the arguments passed into this command based on the configured options.
@@ -157,7 +194,11 @@ class Command:
         if parser is None:
             parser = NoCatchErrorParser()
 
-            for o in self.options:
+            all_options = list(self.options)
+            for g in self.option_groups:
+                all_options += g.options
+
+            for o in all_options:
                 if isinstance(o, Flag):
                     action = 'store_true'
                 else:
@@ -495,35 +536,47 @@ class Cli:
             all_triggers = ', '.join(all_triggers)
             return all_triggers
 
-        if len(command.options) > 0:
+        def print_option_list(options):
+            # Calculate the longest trigger up front so we know the alignment width
+            max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), options, 0)
+            for o in options:
+                triggers = _assemble_triggers(o)
+
+                # Generate template
+                template = '%s' + '%-' + str(max_width) + 's - %s'
+                output = template % (' ' * (indent + step), triggers, o.description)
+                wrapped_output = self.prompt.wrap(output, remaining_line_indent=(indent + step + max_width + 3))
+
+                self.prompt.write(wrapped_output, skip_wrap=True)
+
+        # Header
+        if len(command.options) > 0 or len(command.option_groups) > 0:
             self.prompt.write('')
             self.prompt.write('Available Arguments:')
+            self.prompt.write('')
 
-            # Calculate the longest trigger up front so we know the alignment width
-            max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), command.options, 0)
+        # Print any command-level options
+        if len(command.options) > 0:
+            print_option_list(command.options)
 
-            # Render required v. optional differently
-            required_options = [o for o in command.options if o.required]
-            optional_options = [o for o in command.options if not o.required]
+        if len(command.options) > 0 and len(command.option_groups) > 0:
+            self.prompt.write('')
 
-            def print_option_list(title, options):
-                self.prompt.write(' ' * (indent + step) + title + ':')
-                for o in options:
-                    triggers = _assemble_triggers(o)
+        # Handle any option groups on the command
+        if len(command.option_groups) > 0:
+            for group in command.option_groups:
+                if group.description is not None:
+                    header = '%s: %s' % (group.name, group.description)
+                    extra_indent = 2
+                else:
+                    header = group.name
+                    extra_indent = 0
 
-                    # Generate template
-                    template = '%s' + '%-' + str(max_width) + 's - %s'
-                    wrapped_description = self.prompt.wrap(o.description, remaining_line_indent=(indent + step + max_width + 3))
-                    self.prompt.write(template % (' ' * (indent + step), triggers, wrapped_description), skip_wrap=True)
+                wrapped_header = self.prompt.wrap(header, remaining_line_indent=(indent + step + len(group.name) + extra_indent))
+                self.prompt.write(wrapped_header, skip_wrap=True)
 
-            if len(required_options) > 0:
-                print_option_list('Required', required_options)
-
-            if len(required_options) > 0 and len(optional_options) > 0:
+                print_option_list(group.options)
                 self.prompt.write('')
-
-            if len(optional_options) > 0:
-                print_option_list('Optional', optional_options)
 
         if missing_required:
             self.prompt.write('')
