@@ -565,15 +565,12 @@ class Cli:
         # Handle any option groups on the command
         if len(command.option_groups) > 0:
             for group in command.option_groups:
-                if group.description is not None:
-                    header = '%s: %s' % (group.name, group.description)
-                    extra_indent = 2
-                else:
-                    header = group.name
-                    extra_indent = 0
+                self.prompt.write(group.name)
 
-                wrapped_header = self.prompt.wrap(header, remaining_line_indent=(indent + step + len(group.name) + extra_indent))
-                self.prompt.write(wrapped_header, skip_wrap=True)
+                if group.description is not None:
+                    wrapped_description = self.prompt.wrap(' ' * (indent + step) + group.description, remaining_line_indent=(indent + step))
+                    self.prompt.write(wrapped_description, skip_wrap=True)
+                    self.prompt.write('')
 
                 print_option_list(group.options)
                 self.prompt.write('')
