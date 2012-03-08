@@ -502,13 +502,28 @@ class Cli:
             # Calculate the longest trigger up front so we know the alignment width
             max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), command.options, 0)
 
-            for o in command.options:
-                triggers = _assemble_triggers(o)
+            # Render required v. optional differently
+            required_options = [o for o in command.options if o.required]
+            optional_options = [o for o in command.options if not o.required]
 
-                # Generate template
-                template = '%s' + '%-' + str(max_width) + 's - %s'
-                wrapped_description = self.prompt.wrap(o.description, remaining_line_indent=(indent + step + max_width + 3))
-                self.prompt.write(template % (' ' * (indent + step), triggers, wrapped_description), skip_wrap=True)
+            def print_option_list(title, options):
+                self.prompt.write(' ' * (indent + step) + title + ':')
+                for o in options:
+                    triggers = _assemble_triggers(o)
+
+                    # Generate template
+                    template = '%s' + '%-' + str(max_width) + 's - %s'
+                    wrapped_description = self.prompt.wrap(o.description, remaining_line_indent=(indent + step + max_width + 3))
+                    self.prompt.write(template % (' ' * (indent + step), triggers, wrapped_description), skip_wrap=True)
+
+            if len(required_options) > 0:
+                print_option_list('Required', required_options)
+
+            if len(required_options) > 0 and len(optional_options) > 0:
+                self.prompt.write('')
+
+            if len(optional_options) > 0:
+                print_option_list('Optional', optional_options)
 
         if missing_required:
             self.prompt.write('')
