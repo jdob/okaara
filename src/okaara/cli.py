@@ -507,9 +507,6 @@ class Cli:
 
                 # Generate template
                 template = '%s' + '%-' + str(max_width) + 's - %s'
-                if o.required:
-                    template += ' (required)'
-
                 wrapped_description = self.prompt.wrap(o.description, remaining_line_indent=(indent + step + max_width + 3))
                 self.prompt.write(template % (' ' * (indent + step), triggers, wrapped_description), skip_wrap=True)
 
