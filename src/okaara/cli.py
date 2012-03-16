@@ -53,11 +53,12 @@ class Option:
     """
     Represents an input to a command, either optional or required.
     """
-    def __init__(self, name, description, required=True, allow_multiple=False, aliases=None):
+    def __init__(self, name, description, required=True, allow_multiple=False, aliases=None, default=None):
         self.name = name
         self.description = description
         self.required = required
         self.allow_multiple = allow_multiple
+        self.default = default
 
         if aliases is not None and not isinstance(aliases, (list, tuple)):
             aliases = [aliases]
@@ -221,7 +222,7 @@ class Command:
                 if o.aliases is not None:
                     name_list += o.aliases
 
-                parser.add_option(dest=o.name, help=o.description, action=action, *name_list)
+                parser.add_option(dest=o.name, help=o.description, action=action, default=o.default, *name_list)
 
         options, remaining_args = parser.parse_args(input_args)
         return remaining_args, options.__dict__
