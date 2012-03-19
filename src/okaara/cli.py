@@ -8,7 +8,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 
-from optparse import OptionParser
+from optparse import OptionParser, Values
 import os
 import sys
 
@@ -129,7 +129,7 @@ class Command:
         """
 
         # Parse the command arguments into a dictionary
-        arg_list, kwarg_dict = self._parse_arguments(args)
+        arg_list, kwarg_dict = self.parse_arguments(args)
 
         # Make sure all of the required arguments have been specified
 
@@ -193,7 +193,7 @@ class Command:
             all_options += g.options
         return all_options
 
-    def _parse_arguments(self, input_args):
+    def parse_arguments(self, input_args):
         """
         Parses the arguments passed into this command based on the configured options.
 
@@ -226,7 +226,81 @@ class Command:
 
         options, remaining_args = parser.parse_args(input_args)
         return remaining_args, options.__dict__
-            
+
+    def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
+        """
+        Prints the details of a command, including all options that can be specified to it.
+
+        :param prompt: prompt instance to print the usage to
+        :type  prompt: Prompt
+
+        :param missing_required: list of required options that were not specified on an
+                                 invocation of the CLI
+        :type  missing_required: list of Option
+
+        :param indent: number of spaces to indent the command
+        :type  indent: int
+
+        :param step: number of spaces to increment the indent the command's options
+        :type  step: int
+        """
+
+        prompt.write('%sCommand: %s' % (' ' * indent, self.name))
+        prompt.write('%sDescription: %s' % (' ' * indent, self.description))
+
+        def _assemble_triggers(option):
+            all_triggers = [option.name]
+            if option.aliases is not None:
+                all_triggers += option.aliases
+            all_triggers = ', '.join(all_triggers)
+            return all_triggers
+
+        def print_option_list(options):
+            # Calculate the longest trigger up front so we know the alignment width
+            max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), options, 0)
+            for o in options:
+                triggers = _assemble_triggers(o)
+
+                # Generate template
+                template = '%s' + '%-' + str(max_width) + 's - %s'
+                output = template % (' ' * (indent + step), triggers, o.description)
+                wrapped_output = prompt.wrap(output, remaining_line_indent=(indent + step + max_width + 3))
+
+                prompt.write(wrapped_output, skip_wrap=True)
+
+        # Header
+        if len(self.options) > 0 or len(self.option_groups) > 0:
+            prompt.write('')
+            prompt.write('Available Arguments:')
+            prompt.write('')
+
+        # Print any command-level options
+        if len(self.options) > 0:
+            print_option_list(self.options)
+
+        if len(self.options) > 0 and len(self.option_groups) > 0:
+            self.prompt.write('')
+
+        # Handle any option groups on the command
+        if len(self.option_groups) > 0:
+            for group in self.option_groups:
+                prompt.write(group.name)
+
+                if group.description is not None:
+                    wrapped_description = prompt.wrap(' ' * (indent + step) + group.description, remaining_line_indent=(indent + step))
+                    prompt.write(wrapped_description, skip_wrap=True)
+                    prompt.write('')
+
+                print_option_list(group.options)
+                prompt.write('')
+
+        if missing_required:
+            prompt.write('')
+            prompt.write('The following options are required but were not specified:')
+            for r in missing_required:
+                prompt.write('%s%s' % (' ' * (indent + step), r.name))
+
+
 class Section:
     """
     Represents a division of commands in the CLI. Sections may contain other sections, which
@@ -250,7 +324,7 @@ class Section:
         :param section: section instance to add
         :type  section: Section
         """
-        self._verify_new_structure(section.name)
+        self.verify_new_structure(section.name)
         self.subsections[section.name] = section
 
     def add_command(self, command):
@@ -262,7 +336,7 @@ class Section:
         :param command: command object to add
         :type  command: Command
         """
-        self._verify_new_structure(command.name)
+        self.verify_new_structure(command.name)
         self.commands[command.name] = command
 
     def find_subsection(self, name):
@@ -321,7 +395,51 @@ class Section:
         """
         return self.commands.pop(name, None)
 
-    def _verify_new_structure(self, name):
+    def print_section(self, prompt, indent=0, step=2):
+        """
+        Prints the direct children of a single section; this call will not recurse into the
+        children and print their hierarchy.
+
+        :param prompt: required; prompt instance to print to
+        :type  prompt: Prompt
+
+        :param indent: number of spaces to indent each section
+        :type  indent: int
+
+        :param step: number of spaces to increment the indent on each iteration into a section
+        :type  step: int
+        """
+        launch_script = os.path.basename(sys.argv[0])
+        if self.name != '':
+            prompt.write('Usage: %s %s [SUB_SECTION, ..] COMMAND' % (launch_script, self.name))
+            prompt.write('Description: %s' % self.description)
+            prompt.write('')
+        else:
+            prompt.write('Usage: %s [SECTION, ..] COMMAND' % launch_script)
+            prompt.write('')
+
+        if len(self.subsections) > 0:
+            max_width = reduce(lambda x, y: max(x, len(y)), self.subsections, 0)
+            template = '%s' + '%-' + str(max_width) + 's - %s'
+
+            prompt.write('Available Sections:')
+            for subsection in sorted(self.subsections.values()):
+                wrapped_description = prompt.wrap(subsection.description, remaining_line_indent=(indent + step + max_width + 3))
+                prompt.write(template % (' ' * (indent + step), subsection.name, wrapped_description), skip_wrap=True)
+
+        if len(self.subsections) > 0 and len(self.commands) > 0:
+            prompt.write('')
+
+        if len(self.commands) > 0:
+            max_width = reduce(lambda x, y: max(x, len(y)), self.commands, 0)
+            template = '%s' + '%-' + str(max_width) + 's - %s'
+
+            prompt.write('Available Commands:')
+            for command in sorted(self.commands.values()):
+                wrapped_description = prompt.wrap(command.description, remaining_line_indent=(indent + step + max_width + 3))
+                prompt.write(template % (' ' * (indent + step), command.name, wrapped_description), skip_wrap=True)
+
+    def verify_new_structure(self, name):
         """
         Integrity check to validate that the CLI has not been configured with an entity
         (subsection or command) with the given name.
@@ -401,14 +519,14 @@ class Cli:
         command_or_section, remaining_args = self._find_closest_match(self.root_section, args)
 
         if command_or_section is None:
-            self._print_section(self.root_section)
+            self.root_section.print_section(self.prompt)
         elif isinstance(command_or_section, Section):
-            self._print_section(command_or_section)
+            command_or_section.print_section(self.prompt)
         else:
             try:
                 command_or_section.execute(remaining_args)
             except CommandUsage, e:
-                self._print_command_usage(command_or_section, missing_required=e.missing_options)
+                command_or_section.print_command_usage(self.prompt, missing_required=e.missing_options)
 
     def print_cli_map(self, indent=-2, step=2, show_options=False, section_color=None, command_color=None):
         """
@@ -430,10 +548,10 @@ class Cli:
         :param command_color: if specified, command names will be highlighted with this color
         :type  command_color: str
         """
-        self._recursive_print_section(self.root_section, indent=indent, step=step, show_options=show_options,
+        self._recursive_print_cli_map(self.root_section, indent=indent, step=step, show_options=show_options,
                                       section_color=section_color, command_color=command_color)
 
-    def _recursive_print_section(self, base_section, indent=-2, step=2, show_options=False,
+    def _recursive_print_cli_map(self, base_section, indent=-2, step=2, show_options=False,
                                  section_color=None, command_color=None):
         """
         Prints the contents of a section and all of its children (subsections and commands).
@@ -465,7 +583,7 @@ class Cli:
 
         if len(base_section.subsections) > 0:
             for subsection in sorted(base_section.subsections.values()):
-                self._recursive_print_section(subsection, indent=(indent + step), step=step,
+                self._recursive_print_cli_map(subsection, indent=(indent + step), step=step,
                                               section_color=section_color, command_color=command_color)
 
         # Only put a blank line between highest level sections. This may not be
@@ -473,124 +591,6 @@ class Cli:
         # makes sense
         if indent <= 0:
             self.prompt.write('')
-
-    def _print_section(self, section, indent=0, step=2):
-        """
-        Prints the direct children of a single section; this call will not recurse into the
-        children and print their hierarchy.
-
-        :param section: required; section to print
-        :type  section: L{Section}
-
-        :param indent: number of spaces to indent each section
-        :type  indent: int
-
-        :param step: number of spaces to increment the indent on each iteration into a section
-        :type  step: int
-        """
-        launch_script = os.path.basename(sys.argv[0])
-        if section.name != '':
-            self.prompt.write('Usage: %s %s [SUB_SECTION, ..] COMMAND' % (launch_script, section.name))
-            self.prompt.write('Description: %s' % section.description)
-            self.prompt.write('')
-        else:
-            self.prompt.write('Usage: %s [SECTION, ..] COMMAND' % launch_script)
-            self.prompt.write('')
-
-        if len(section.subsections) > 0:
-            max_width = reduce(lambda x, y: max(x, len(y)), section.subsections, 0)
-            template = '%s' + '%-' + str(max_width) + 's - %s'
-
-            self.prompt.write('Available Sections:')
-            for subsection in sorted(section.subsections.values()):
-                wrapped_description = self.prompt.wrap(subsection.description, remaining_line_indent=(indent + step + max_width + 3))
-                self.prompt.write(template % (' ' * (indent + step), subsection.name, wrapped_description), skip_wrap=True)
-
-        if len(section.subsections) > 0 and len(section.commands) > 0:
-            self.prompt.write('')
-
-        if len(section.commands) > 0:
-            max_width = reduce(lambda x, y: max(x, len(y)), section.commands, 0)
-            template = '%s' + '%-' + str(max_width) + 's - %s'
-
-            self.prompt.write('Available Commands:')
-            for command in sorted(section.commands.values()):
-                wrapped_description = self.prompt.wrap(command.description, remaining_line_indent=(indent + step + max_width + 3))
-                self.prompt.write(template % (' ' * (indent + step), command.name, wrapped_description), skip_wrap=True)
-
-
-    def _print_command_usage(self, command, missing_required=None, indent=0, step=2):
-        """
-        Prints the details of a command, including all options that can be specified to it.
-
-        :param command: command to print
-        :type  command: L{Command}
-
-        :param missing_required: list of required options that were not specified on an
-                                 invocation of the CLI
-        :type  missing_required: list of L{Option}
-
-        :param indent: number of spaces to indent the command
-        :type  indent: int
-
-        :param step: number of spaces to increment the indent the command's options
-        :type  step: int
-        """
-
-        self.prompt.write('%sCommand: %s' % (' ' * indent, command.name))
-        self.prompt.write('%sDescription: %s' % (' ' * indent, command.description))
-
-        def _assemble_triggers(option):
-            all_triggers = [option.name]
-            if option.aliases is not None:
-                all_triggers += option.aliases
-            all_triggers = ', '.join(all_triggers)
-            return all_triggers
-
-        def print_option_list(options):
-            # Calculate the longest trigger up front so we know the alignment width
-            max_width = reduce(lambda x, y: max(x, len(_assemble_triggers(y))), options, 0)
-            for o in options:
-                triggers = _assemble_triggers(o)
-
-                # Generate template
-                template = '%s' + '%-' + str(max_width) + 's - %s'
-                output = template % (' ' * (indent + step), triggers, o.description)
-                wrapped_output = self.prompt.wrap(output, remaining_line_indent=(indent + step + max_width + 3))
-
-                self.prompt.write(wrapped_output, skip_wrap=True)
-
-        # Header
-        if len(command.options) > 0 or len(command.option_groups) > 0:
-            self.prompt.write('')
-            self.prompt.write('Available Arguments:')
-            self.prompt.write('')
-
-        # Print any command-level options
-        if len(command.options) > 0:
-            print_option_list(command.options)
-
-        if len(command.options) > 0 and len(command.option_groups) > 0:
-            self.prompt.write('')
-
-        # Handle any option groups on the command
-        if len(command.option_groups) > 0:
-            for group in command.option_groups:
-                self.prompt.write(group.name)
-
-                if group.description is not None:
-                    wrapped_description = self.prompt.wrap(' ' * (indent + step) + group.description, remaining_line_indent=(indent + step))
-                    self.prompt.write(wrapped_description, skip_wrap=True)
-                    self.prompt.write('')
-
-                print_option_list(group.options)
-                self.prompt.write('')
-
-        if missing_required:
-            self.prompt.write('')
-            self.prompt.write('The following options are required but were not specified:')
-            for r in missing_required:
-                self.prompt.write('%s%s' % (' ' * (indent + step), r.name))
 
     def _find_closest_match(self, base_section, args):
         """
