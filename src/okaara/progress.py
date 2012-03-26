@@ -107,21 +107,31 @@ class ProgressBar:
             if fill_count == total_fill_width:
                 bar_color = self.completed_color
 
-        self.prompt.write(fill_bar, color=bar_color, tag=self.render_tag)
+        # Never wrap the bar itself, that's just too much of a headache and the
+        # caller should have pre-computed the size of the bar based on desired wrap.
+        self.prompt.write(fill_bar, color=bar_color, tag=self.render_tag, skip_wrap=True)
 
+        message_line_count = 0
         if message is not None:
-            self.prompt.write(message)
+            # We need an accurate count of how many lines will be written so we
+            # can properly backtrack to re-render the bar. First step is to
+            # not treat message as a single string and break it apart based on
+            # the line breaks introduced by the caller.
+
+            message_lines = message.split('\n')
+
+            for l in message_lines:
+                # It's possible the write call will want to wrap, but then it
+                # won't tell us how many lines it ended up becoming. We explicitly
+                # wrap it here so we can get the line count for our records and
+                # then passed the already wrapped version into the write.
+                wrapped = self.prompt.wrap(l)
+                message_line_count += len(wrapped.split('\n'))
+
+                self.prompt.write(wrapped, skip_wrap=True)
 
         # Save the number of lines written for the next iteration
-        message_lines = 0
-        if message is not None:
-            # It's possible the write call to the message above will have wrapped
-            # the message. We need to know how many lines the *wrapped* message
-            # occupied so we backtrack the correct number of lines. 
-            wrapped = self.prompt.wrap(message)
-            message_lines = len(wrapped.split('\n'))
-
-        self.previous_lines_written = 1 + message_lines
+        self.previous_lines_written = 1 + message_line_count
 
     def iterator(self, iterable, message_func=None):
         """
@@ -470,5 +480,21 @@ def multi_call_demo():
     s.stop()
     p.write('Stopped 2')
 
+def test():
+    import okaara.prompt
+    p = okaara.prompt.Prompt(wrap_width=20)
+
+    pb = ProgressBar(p)
+
+    total = 21
+    for i in range(0, total + 1):
+        message  = 'Step: %d of %d\n' % (i, total)
+        message += 'Second line 123456789012345678901234567890\n'
+        message += 'Third line\n'
+        message += 'Fourth line\n'
+
+        pb.render(i, total, message)
+        time.sleep(.15)
+
 if __name__ == '__main__':
-    demo()
+    test()
