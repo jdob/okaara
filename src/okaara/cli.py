@@ -494,6 +494,30 @@ class Cli:
         """
         return self.root_section.find_subsection(name)
 
+    def add_command(self, command):
+        """
+        Adds a command that may be executed in this section (in other words, a leaf in this
+        node of the CLI tree). Any arguments that were specified after the path used to
+        identify this command will be passed to the command's execution itself.
+
+        :param command: command object to add
+        :type  command: Command
+        """
+        self.root_section.add_command(command)
+
+
+    def find_command(self, name):
+        """
+        Returns the command under this section with the given name.
+
+        :param name: required; name of the command to find
+        :type  name: string
+
+        :return: command object for the matching command if it exists; None otherwise
+        :rtype:  Command
+        """
+        return self.root_section.find_command(name)
+
     def remove_section(self, name):
         """
         Removes the section with the given name. If no section exists with that
