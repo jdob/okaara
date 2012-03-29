@@ -104,7 +104,7 @@ class Prompt:
 
         :param record_tags: if true, the prompt will keep track of tags passed
                             to all write calls
-        :param record_tags: bool
+        :type  record_tags: bool
         """
         self.input = input
         self.output = output
