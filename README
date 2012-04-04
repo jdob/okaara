@@ -1,0 +1,6 @@
+For more information, see:
+
+  http://jdob.fedorapeople.org/okaara/
+
+That site's documentation can also be built locally by running "make html"
+from the doc directory.

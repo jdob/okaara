@@ -1,6 +1,6 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-# -- header -----------------------------------------------------------------------
+# -- headers ------------------------------------------------------------------
 
 Name:		    python-okaara
 Version:        1.0.13
@@ -17,24 +17,20 @@ BuildArch:      noarch
 BuildRequires:  python-setuptools
 Requires:	    python >= 2.4
 
-
 %description
 Library of Python functions that facilitate the creation of command-line interfaces.
-
 
 %prep
 %setup -q
 
-
-# -- build -----------------------------------------------------------------------
+# -- build --------------------------------------------------------------------
 
 %build
 pushd src
 %{__python} setup.py build
 popd
 
-
-# -- install ---------------------------------------------------------------------
+# -- install ------------------------------------------------------------------
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -45,21 +41,19 @@ pushd src
 popd
 rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 
-
 # -- clean -----------------------------------------------------------------------
 
 %clean
 rm -rf $RPM_BUILD_ROOT
 
-
+# -- files --------------------------------------------------------------------
 
 %files
 %defattr(-,root,root,-)
 %{python_sitelib}/okaara/*
 %{python_sitelib}/okaara*.egg-info
 
-
-# -- changelog -------------------------------------------------------------------
+# -- changelog ----------------------------------------------------------------
 
 %changelog
 * Wed Mar 28 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.13-1
@@ -201,7 +195,3 @@ rm -rf $RPM_BUILD_ROOT
 - Added first sample shell and made some fixes accordingly
   (jason.dobies@redhat.com)
 - Continuing on prompt unit tests (jason.dobies@redhat.com)
-
-* Sat May 07 2011 Jay Dobies <jason.dobies@redhat.com> 1.0.1-1
-- First revision
-
