@@ -12,19 +12,20 @@ from optparse import OptionParser, Values
 import os
 import sys
 
-# -- exceptions ----------------------------------------------------------------------
+# -- exceptions ---------------------------------------------------------------
 
 class InvalidStructure(Exception):
     """
-    Indicates the programmer attempted to assemble a CLI with sections/commands that would
-    conflict with each other (likely duplicates).
+    Indicates the programmer attempted to assemble a CLI with sections/commands
+    that would conflict with each other (likely duplicates).
     """
     pass
 
 class CommandUsage(Exception):
     """
-    Indicates the command parameters were incorrect. If the usage error was the lack of
-    required parameters, all required parameters that were missing can be specified.
+    Indicates the command parameters were incorrect. If the usage error was the
+    lack of required parameters, all required parameters that were missing can
+    be specified.
 
     :param missing_options: optional list of options that are required but missing
     :type  missing_options: list of L{Option}
@@ -33,13 +34,13 @@ class CommandUsage(Exception):
         Exception.__init__(self)
         self.missing_options = missing_options
 
-# -- classes ----------------------------------------------------------------------
+# -- classes ------------------------------------------------------------------
 
 class NoCatchErrorParser(OptionParser):
     """
-    OptionParser's default behavior for handling errors is to print the output and exit.
-    I'd rather go through the rest of the CLI's output methods, so change this behavior to
-    throw my exception instead.
+    OptionParser's default behavior for handling errors is to print the output
+    and exit. I'd rather go through the rest of the CLI's output methods, so
+    change this behavior to throw my exception instead.
     """
     def exit(self, status=0, msg=None):
         raise CommandUsage()
@@ -69,8 +70,8 @@ class Option:
 
 class Flag(Option):
     """
-    Specific form of an option that does not take a value; it is meant to be either included
-    in the command or excluded.
+    Specific form of an option that does not take a value; it is meant to be
+    either included in the command or excluded.
     """
     def __init__(self, name, description, aliases=None):
         Option.__init__(self, name, description, required=False, allow_multiple=False, aliases=aliases)
@@ -102,9 +103,9 @@ class OptionGroup:
 
 class Command:
     """
-    Represents something that should be executed by the CLI. These nodes will be leaves
-    in the CLI tree. Each command is tied to a single python method and will invoke that
-    method with whatever arguments follow it.
+    Represents something that should be executed by the CLI. These nodes will be
+    leaves in the CLI tree. Each command is tied to a single python method and
+    will invoke that method with whatever arguments follow it.
     """
     def __init__(self, name, description, method, parser=None):
         self.name = name
@@ -120,11 +121,12 @@ class Command:
 
     def execute(self, args):
         """
-        Executes this command, passing the remaining arguments into OptParse to process.
+        Executes this command, passing the remaining arguments into OptParse to
+        process.
 
-        :param args: any arguments that remained after parsing the command line to determine
-                     the command to execute; these are considered arguments to the command's
-                     execution itself
+        :param args: any arguments that remained after parsing the command line
+                     to determine the command to execute; these are considered
+                     arguments to the command's execution itself
         :type  args: list of strings
         """
 
@@ -139,9 +141,9 @@ class Command:
         if len(missing_required) > 0:
             raise CommandUsage(missing_required)
 
-        # Flag entries that are not specified are parsed as None, but I'd rather them
-        # explicitly be set to false. Iterate through each flag explicitly setting the
-        # value to false if it was not specified
+        # Flag entries that are not specified are parsed as None, but I'd rather
+        # them explicitly be set to false. Iterate through each flag explicitly
+        # setting the value to false if it was not specified
         for o in self.options:
             if isinstance(o, Flag) and kwarg_dict[o.name] is None:
                 kwarg_dict[o.name] = False
@@ -161,14 +163,25 @@ class Command:
 
     def add_option(self, option):
         """
-        Adds an option that can be specified when executing this command. When executing the
-        command, the user specified arguments to the command are parsed according to options
-        specified in this fashion.
+        Adds an option that can be specified when executing this command. When
+        executing the command, the user specified arguments to the command are
+        parsed according to options specified in this fashion.
 
         :param option: option (or flag) to add to the command
         :type  option: Option
         """
         self.options.append(option)
+
+    def add_flag(self, flag):
+        """
+        Adds a flag that can be specified when executing this command. As Flag
+        is a subclass of Option, this call has the same effect as add_option
+        and is simply included as syntactic sugar for completeness.
+
+        :param flag: flag to add to the command
+        :type  flag: Flag
+        """
+        self.add_option(flag)
 
     def add_option_group(self, option_group):
         """
@@ -179,6 +192,86 @@ class Command:
         :type  option_group: OptionGroup
         """
         self.option_groups.append(option_group)
+
+    def create_option(self, name, description, aliases=None, required=True, allow_multiple=False):
+        """
+        Creates a new option for this command. An option is an argument to the
+        command line call that accepts a value.
+
+        The given name must be unique across all options within this command.
+        The option instance is returned and can be further edited except for
+        its name.
+
+        If the default parser is used by the command, the name must match the
+        typical command line argument format, either:
+
+        * -s - where s is a single character
+        * --detail - where the argument is longer than one character
+
+        The default parser will strip off the leading hyphens when it makes the
+        values available to the command's method.
+
+        :param name: trigger to set the option
+        :type  name: str
+
+        :param description: user-readable text describing what the option does
+        :type  description: str
+
+        :param aliases: list of other argument names that may be used to set
+               the value for this option
+        :type  aliases: list
+
+        :param required: if true, the default parser will enforce the the user
+               specifies this option and display a usage warning otherwise
+        :type  required: bool
+
+        :param allow_multiple: if true, the value of this option when parsed
+               will be a list of values in the order in which the user entered them
+        :type  allow_multiple: bool
+
+        :return: instance representing the option
+        :rtype:  PulpCliOption
+        """
+        option = Option(name, description, required=required, allow_multiple=allow_multiple, aliases=aliases)
+        self.add_option(option)
+        return option
+
+    def create_flag(self, name, description, aliases=None):
+        """
+        Creates a new flag for this command. A flag is an argument that accepts
+        no value from the user. If specified, the value will be True when it
+        is passed to the command's underlying method. Flags are, by their
+        nature, always optional.
+
+        The given name must be unique across all options within this command.
+        The option instance is returned and can be further edited except for
+        its name.
+
+        If the default parser is used by the command, the name must match the
+        typical command line argument format, either:
+
+        * -s - where s is a single character
+        * --detail - where the argument is longer than one character
+
+        The default parser will strip off the leading hyphens when it makes the
+        values available to the command's method.
+
+        :param name: trigger to set the flag
+        :type  name: str
+
+        :param description: user-readable text describing what the option does
+        :type  description: str
+
+        :param aliases: list of other argument names that may be used to set
+               the value for this flag
+        :type  aliases: list
+
+        :return: instance representing the flag
+        :rtype:  PulpFliFlag
+        """
+        flag = Flag(name, description, aliases=aliases)
+        self.add_option(flag)
+        return flag
 
     def all_options(self):
         """
@@ -195,7 +288,8 @@ class Command:
 
     def parse_arguments(self, input_args):
         """
-        Parses the arguments passed into this command based on the configured options.
+        Parses the arguments passed into this command based on the configured
+        options.
 
         :return: mapping of argument to value
         :rtype:  dict
@@ -229,13 +323,14 @@ class Command:
 
     def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
         """
-        Prints the details of a command, including all options that can be specified to it.
+        Prints the details of a command, including all options that can be
+        specified to it.
 
         :param prompt: prompt instance to print the usage to
         :type  prompt: Prompt
 
-        :param missing_required: list of required options that were not specified on an
-                                 invocation of the CLI
+        :param missing_required: list of required options that were not
+                                 specified on an invocation of the CLI
         :type  missing_required: list of Option
 
         :param indent: number of spaces to indent the command
@@ -279,7 +374,7 @@ class Command:
             print_option_list(self.options)
 
         if len(self.options) > 0 and len(self.option_groups) > 0:
-            self.prompt.write('')
+            prompt.write('')
 
         # Handle any option groups on the command
         if len(self.option_groups) > 0:
@@ -303,8 +398,9 @@ class Command:
 
 class Section:
     """
-    Represents a division of commands in the CLI. Sections may contain other sections, which
-    creates a string of arguments used to get to a command (think namespaces).
+    Represents a division of commands in the CLI. Sections may contain other
+    sections, which creates a string of arguments used to get to a command
+    (think namespaces).
     """
     def __init__(self, name, description):
         self.name = name
@@ -317,9 +413,9 @@ class Section:
 
     def add_subsection(self, section):
         """
-        Adds another node to the CLI tree. Users will be able to specify the given name when
-        specifying this section. Doing so will recurse into the subsection's subtree to
-        continue parsing for other subsections or commands.
+        Adds another node to the CLI tree. Users will be able to specify the
+        given name when specifying this section. Doing so will recurse into the
+        subsection's subtree to continue parsing for other subsections or commands.
 
         :param section: section instance to add
         :type  section: Section
@@ -329,15 +425,71 @@ class Section:
 
     def add_command(self, command):
         """
-        Adds a command that may be executed in this section (in other words, a leaf in this
-        node of the CLI tree). Any arguments that were specified after the path used to
-        identify this command will be passed to the command's execution itself.
+        Adds a command that may be executed in this section (in other words, a
+        leaf in this node of the CLI tree). Any arguments that were specified
+        after the path used to identify this command will be passed to the
+        command's execution itself.
 
         :param command: command object to add
         :type  command: Command
         """
         self.verify_new_structure(command.name)
         self.commands[command.name] = command
+
+    def create_command(self, name, description, method, parser=None):
+        """
+        Creates a new command in this section. The given name must be
+        unique across all commands and subsections within this section.
+        The command instance is returned and can be further edited except
+        for its name.
+
+        Commands created in this fashion do not need to be added to this
+        section through the add_command method.
+
+        :param name: trigger that will cause this command to run
+        :type  name: str
+
+        :param description: user-readable text describing what happens when
+               running this command; displayed to users in the usage output
+        :type  description: str
+
+        :param method: method that will be invoked when this command is run
+        :type  method: function
+
+        :param parser: if specified, the remaining arguments to this command
+               as specified by the user will be passed to this object to
+               be handled; the results will be sent to the command's method
+        :type  parser: OptionParser
+
+        :return: instance representing the newly added command
+        :rtype:  PulpCliCommand
+        """
+        command = Command(name, description, method, parser=parser)
+        self.add_command(command)
+        return command
+
+    def create_subsection(self, name, description):
+        """
+        Creates a new subsection in this section. The given name must be unique
+        across all commands and subsections within this section. The section
+        instance is returned and can be further edited except for its name.
+
+        Sections created in this fashion do not need to be added to this section
+        through the add_section method.
+
+        :param name: identifies the section
+        :type  name: str
+
+        :param description: user-readable text describing the contents of this
+               subsection
+        :type  description: str
+
+        :return: instance representing the newly added section
+        :rtype:  PulpCliSection
+        """
+        subsection = Section(name, description)
+        self.add_subsection(subsection)
+        return subsection
 
     def find_subsection(self, name):
         """
@@ -397,8 +549,8 @@ class Section:
 
     def print_section(self, prompt, indent=0, step=2):
         """
-        Prints the direct children of a single section; this call will not recurse into the
-        children and print their hierarchy.
+        Prints the direct children of a single section; this call will not
+        recurse into the children and print their hierarchy.
 
         :param prompt: required; prompt instance to print to
         :type  prompt: Prompt
@@ -406,7 +558,8 @@ class Section:
         :param indent: number of spaces to indent each section
         :type  indent: int
 
-        :param step: number of spaces to increment the indent on each iteration into a section
+        :param step: number of spaces to increment the indent on each iteration
+                     into a section
         :type  step: int
         """
         launch_script = os.path.basename(sys.argv[0])
@@ -441,8 +594,8 @@ class Section:
 
     def verify_new_structure(self, name):
         """
-        Integrity check to validate that the CLI has not been configured with an entity
-        (subsection or command) with the given name.
+        Integrity check to validate that the CLI has not been configured with an
+        entity (subsection or command) with the given name.
 
         :param name: name of the subsection/command to look for
         :type  name: string
@@ -459,9 +612,10 @@ class Section:
 
 class Cli:
     """
-    Representation of the CLI being created. Coders should create an instance of this class
-    as the basis for the CLI. At that point, calling add_* methods will return the nodes/leaves
-    of the CLI tree to further manipulate and create the desired CLI hierarchy.
+    Representation of the CLI being created. Coders should create an instance of
+    this class as the basis for the CLI. At that point, calling add_* methods
+    will return the nodes/leaves of the CLI tree to further manipulate and
+    create the desired CLI hierarchy.
     """
 
     def __init__(self, prompt):
@@ -473,9 +627,9 @@ class Cli:
 
     def add_section(self, section):
         """
-        Adds a new section to the CLI. Users will be able to specify the given name when
-        specifying this section. Doing so will recurse into the section's subtree to
-        continue parsing for other subsections or commands.
+        Adds a new section to the CLI. Users will be able to specify the given
+        name when specifying this section. Doing so will recurse into the
+        section's subtree to continue parsing for other subsections or commands.
 
         :param section: section instance to add
         :type  section: Section
@@ -496,9 +650,10 @@ class Cli:
 
     def add_command(self, command):
         """
-        Adds a command that may be executed in this section (in other words, a leaf in this
-        node of the CLI tree). Any arguments that were specified after the path used to
-        identify this command will be passed to the command's execution itself.
+        Adds a command that may be executed in this section (in other words, a
+        leaf in this node of the CLI tree). Any arguments that were specified
+        after the path used to identify this command will be passed to the
+        command's execution itself.
 
         :param command: command object to add
         :type  command: Command
@@ -533,9 +688,10 @@ class Cli:
 
     def run(self, args):
         """
-        Driver for the CLI. The specified arguments will be parsed to determine which command
-        to execute, as well as any arguments to that command's execution. After assembling
-        the CLI using the add_* calls, this method should be run to do the actual work.
+        Driver for the CLI. The specified arguments will be parsed to determine
+        which command to execute, as well as any arguments to that command's
+        execution. After assembling the CLI using the add_* calls, this method
+        should be run to do the actual work.
 
         :param args: defines the command being invoked and any arguments to it
         :type  args: list
@@ -554,22 +710,26 @@ class Cli:
 
     def print_cli_map(self, indent=-2, step=2, show_options=False, section_color=None, command_color=None):
         """
-        Prints the structure of the CLI in a tree-like structure to indicate section ownership.
+        Prints the structure of the CLI in a tree-like structure to indicate
+        section ownership.
 
         :param indent: number of spaces to indent each section
         :type  indent: int
 
-        :param step: number of spaces to increment the indent on each iteration into a section
+        :param step: number of spaces to increment the indent on each iteration
+                     into a section
         :type  step: int
 
         :param show_options: if true, command options will be displayed; defaults
                to false
         :type  show_options: bool
 
-        :param section_color: if specified, section names will be highlighted with this color
+        :param section_color: if specified, section names will be highlighted
+                              with this color
         :type  section_color: str
 
-        :param command_color: if specified, command names will be highlighted with this color
+        :param command_color: if specified, command names will be highlighted
+                              with this color
         :type  command_color: str
         """
         self._recursive_print_cli_map(self.root_section, indent=indent, step=step, show_options=show_options,
@@ -578,10 +738,12 @@ class Cli:
     def _recursive_print_cli_map(self, base_section, indent=-2, step=2, show_options=False,
                                  section_color=None, command_color=None):
         """
-        Prints the contents of a section and all of its children (subsections and commands).
+        Prints the contents of a section and all of its children (subsections
+        and commands).
         """
-        # Need a way to not print the root section of the CLI, which doesn't represent
-        # an actual user section, so a ghetto check is to make sure the name isn't blank
+        # Need a way to not print the root section of the CLI, which doesn't
+        # represent an actual user section, so a ghetto check is to make sure
+        # the name isn't blank
         if base_section.name != '':
             wrapped_description = self.prompt.wrap(base_section.description, remaining_line_indent=(len(base_section.name) + 2 + indent))
             highlighted_name = self.prompt.color(base_section.name, section_color)
@@ -618,21 +780,23 @@ class Cli:
 
     def _find_closest_match(self, base_section, args):
         """
-        Searches the CLI structure for the command that matches the path in the given arguments.
-        If no command is found,
+        Searches the CLI structure for the command that matches the path in the
+        given arguments. If no command is found, a tuple of None references
+        is returned.
 
         :param base_section: root section from which to begin the search
-        :type  base_section: L{Section}
+        :type  base_section: Section
 
         :param args: list of arguments to use as the path to the command to search
         :type  args: list
 
-        :return: tuple of the closest matching command or section based on the argument list
-        :rtype:  L{Command}, list or L{Section}, list
+        :return: tuple of the closest matching command or section based on the
+                 argument list
+        :rtype:  Command, list or Section, list
         """
 
-        # If we've recursed so much that we ran out of arguments, we haven't found a command yet,
-        # so we return the deepest section we found
+        # If we've recursed so much that we ran out of arguments, we haven't
+        # found a command yet, so we return the deepest section we found
         if len(args) is 0:
             return base_section, args[1:]
 
@@ -710,6 +874,7 @@ class UnknownArgsParser:
 
         The keys will be the name of the argument with any leading hyphens removed.
         The value will be one of three possibilties:
+
         * The string representation of the value immediately following it (common case)
         * The boolean True if no value or another argument definition follows it
         * A list of strings if the argument is specified more than once
@@ -734,7 +899,7 @@ class UnknownArgsParser:
         parsed = {}
         required_names = [r[0] for r in self.required_options]
 
-        index = 0 # this won't necessarily step by 1 each time, so dont' use something like enumerate
+        index = 0 # this won't necessarily step by 1 each time, so don't use something like enumerate
         while index < len(args):
             item = args[index]
 
