@@ -578,7 +578,7 @@ class Section:
             template = '%s' + '%-' + str(max_width) + 's - %s'
 
             prompt.write('Available Sections:')
-            for subsection in sorted(self.subsections.values()):
+            for subsection in sorted(self.subsections.values(), key=lambda x : x.name):
                 wrapped_description = prompt.wrap(subsection.description, remaining_line_indent=(indent + step + max_width + 3))
                 prompt.write(template % (' ' * (indent + step), subsection.name, wrapped_description), skip_wrap=True)
 
@@ -590,7 +590,7 @@ class Section:
             template = '%s' + '%-' + str(max_width) + 's - %s'
 
             prompt.write('Available Commands:')
-            for command in sorted(self.commands.values()):
+            for command in sorted(self.commands.values(), key=lambda x : x.name):
                 wrapped_description = prompt.wrap(command.description, remaining_line_indent=(indent + step + max_width + 3))
                 prompt.write(template % (' ' * (indent + step), command.name, wrapped_description), skip_wrap=True)
 
