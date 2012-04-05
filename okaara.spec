@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:		    python-okaara
-Version:        1.0.13
+Version:        1.0.14
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
 
@@ -56,6 +56,18 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Wed Apr 04 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.14-1
+- Added create methods to CLI itself and default exit code for commands
+  (jason.dobies@redhat.com)
+- Sort sections/commands alphabetically by name on usage. Not perfect and
+  eventually make customizable, but this works for now.
+  (jason.dobies@redhat.com)
+- Added exit code as the return value for CLI.run (jason.dobies@redhat.com)
+- Added optional command description that is only displayed in the usage output
+  (jason.dobies@redhat.com)
+- Added syntactic sugar methods for create to section and command
+  (jason.dobies@redhat.com)
+
 * Wed Mar 28 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.13-1
 - Added add/find command to root of the CLI (jason.dobies@redhat.com)
 - Fixed bar rendering when prompt auto_wrap is enabled and the user supplies a
