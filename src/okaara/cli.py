@@ -107,14 +107,15 @@ class Command:
     leaves in the CLI tree. Each command is tied to a single python method and
     will invoke that method with whatever arguments follow it.
     """
-    def __init__(self, name, description, method, parser=None):
+    def __init__(self, name, description, method, usage_description=None, parser=None):
         self.name = name
         self.description = description
         self.method = method
+        self.usage_description = usage_description
+        self.parser = parser
+
         self.options = []
         self.option_groups = []
-
-        self.parser = parser
 
     def __str__(self):
         return 'Command [%s]' % self.name
@@ -342,6 +343,8 @@ class Command:
 
         prompt.write('%sCommand: %s' % (' ' * indent, self.name))
         prompt.write('%sDescription: %s' % (' ' * indent, self.description))
+        if self.usage_description is not None:
+            prompt.write('%sUsage: %s' % (' ' * indent, self.usage_description))
 
         def _assemble_triggers(option):
             all_triggers = [option.name]
