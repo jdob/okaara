@@ -438,7 +438,7 @@ class Section:
         self.verify_new_structure(command.name)
         self.commands[command.name] = command
 
-    def create_command(self, name, description, method, parser=None):
+    def create_command(self, name, description, method, usage_description=None, parser=None):
         """
         Creates a new command in this section. The given name must be
         unique across all commands and subsections within this section.
@@ -458,6 +458,10 @@ class Section:
         :param method: method that will be invoked when this command is run
         :type  method: function
 
+        :param usage_description: optional extra text that is only displayed
+               when viewing the full usage of this command
+        :type  usage_description: str or None
+
         :param parser: if specified, the remaining arguments to this command
                as specified by the user will be passed to this object to
                be handled; the results will be sent to the command's method
@@ -466,7 +470,7 @@ class Section:
         :return: instance representing the newly added command
         :rtype:  PulpCliCommand
         """
-        command = Command(name, description, method, parser=parser)
+        command = Command(name, description, method, usage_description=usage_description, parser=parser)
         self.add_command(command)
         return command
 
@@ -638,18 +642,6 @@ class Cli:
         """
         self.root_section.add_subsection(section)
 
-    def find_section(self, name):
-        """
-        Returns the subsection of this section with the given name.
-
-        :param name: required; name of the subsection to find
-        :type  name: string
-
-        :return: section object for the matching subsection if it exists; None otherwise
-        :rtype:  Section
-        """
-        return self.root_section.find_subsection(name)
-
     def add_command(self, command):
         """
         Adds a command that may be executed in this section (in other words, a
@@ -662,6 +654,76 @@ class Cli:
         """
         self.root_section.add_command(command)
 
+    def create_section(self, name, description):
+        """
+        Creates a new subsection at the root of the CLI. The given name must be
+        unique across all commands and subsections within this section. The
+        section instance is returned and can be further edited except for its name.
+
+        Sections created in this fashion do not need to be added  through the
+        add_section method.
+
+        :param name: identifies the section
+        :type  name: str
+
+        :param description: user-readable text describing the contents of this
+               subsection
+        :type  description: str
+
+        :return: instance representing the newly added section
+        :rtype:  PulpCliSection
+        """
+        subsection = Section(name, description)
+        self.add_section(subsection)
+        return subsection
+
+    def create_command(self, name, description, method, usage_description=None, parser=None):
+        """
+        Creates a new command in this section. The given name must be
+        unique across all commands and subsections within this section.
+        The command instance is returned and can be further edited except
+        for its name.
+
+        Commands created in this fashion do not need to be added to this
+        section through the add_command method.
+
+        :param name: trigger that will cause this command to run
+        :type  name: str
+
+        :param description: user-readable text describing what happens when
+               running this command; displayed to users in the usage output
+        :type  description: str
+
+        :param method: method that will be invoked when this command is run
+        :type  method: function
+
+        :param usage_description: optional extra text that is only displayed
+               when viewing the full usage of this command
+        :type  usage_description: str or None
+
+        :param parser: if specified, the remaining arguments to this command
+               as specified by the user will be passed to this object to
+               be handled; the results will be sent to the command's method
+        :type  parser: OptionParser
+
+        :return: instance representing the newly added command
+        :rtype:  PulpCliCommand
+        """
+        command = Command(name, description, method, usage_description=usage_description, parser=parser)
+        self.add_command(command)
+        return command
+    
+    def find_section(self, name):
+        """
+        Returns the subsection of this section with the given name.
+
+        :param name: required; name of the subsection to find
+        :type  name: string
+
+        :return: section object for the matching subsection if it exists; None otherwise
+        :rtype:  Section
+        """
+        return self.root_section.find_subsection(name)
 
     def find_command(self, name):
         """
@@ -713,6 +775,11 @@ class Cli:
         else:
             try:
                 exit_code = command_or_section.execute(remaining_args)
+
+                # Default handling; if no code specified, assume ok
+                if exit_code is None:
+                    exit_code = os.EX_OK
+
                 return exit_code
             except CommandUsage, e:
                 command_or_section.print_command_usage(self.prompt, missing_required=e.missing_options)
