@@ -7,7 +7,6 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-
 from optparse import OptionParser, Values
 import os
 import sys
@@ -698,18 +697,26 @@ class Cli:
 
         :param args: defines the command being invoked and any arguments to it
         :type  args: list
+
+        :return: exit code as indicated by the command that is executed,
+                 suitable for using as the executable exit code
+        :rtype:  int
         """
         command_or_section, remaining_args = self._find_closest_match(self.root_section, args)
 
         if command_or_section is None:
             self.root_section.print_section(self.prompt)
+            return os.EX_USAGE
         elif isinstance(command_or_section, Section):
             command_or_section.print_section(self.prompt)
+            return os.EX_USAGE
         else:
             try:
-                command_or_section.execute(remaining_args)
+                exit_code = command_or_section.execute(remaining_args)
+                return exit_code
             except CommandUsage, e:
                 command_or_section.print_command_usage(self.prompt, missing_required=e.missing_options)
+                return os.EX_USAGE
 
     def print_cli_map(self, indent=-2, step=2, show_options=False, section_color=None, command_color=None):
         """
