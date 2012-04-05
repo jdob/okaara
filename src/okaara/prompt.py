@@ -196,6 +196,7 @@ class Prompt:
         Centers the given text. Nothing is output to the screen; the formatted string
         is returned. The width in which to center is the first non-None value
         in the following order:
+
          * Provided width parameter
          * Instance-level wrap_width value
          * Terminal width
@@ -224,8 +225,21 @@ class Prompt:
 
     def wrap(self, content, wrap_width=None, remaining_line_indent=0):
         """
-        If the wrap_width is specified, this call will introduce \n characters
-        to maintain that width.
+        If the wrap_width is specified, this call will introduce new line
+        characters to maintain that width.
+
+        :param content: text to wrap
+        :type  content: str
+
+        :param wrap_width: number of characters to wrap to
+        :type  wrap_width: int
+
+        :param remaining_line_indent: number of characters to indent any new
+               lines generated from this call
+        :type  remaining_line_indent: int
+
+        :return: wrapped version of the content string
+        :rtype:  str
         """
 
         # If it's not overridden, use the instance-configured wrap width

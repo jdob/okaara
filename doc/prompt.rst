@@ -53,13 +53,13 @@ There is no need to manually decide whether or not to make the color call,
 the prompt instance will take care of enabling/disabling them for you.
 
 Testing
-=======
+^^^^^^^
 
 I'm a compulsive unit tester, so I wanted to provide an answer for some of the
 difficulties in unit testing a user interface.
 
 Testing Output
-^^^^^^^^^^^^^^
+--------------
 
 One option to assert the output displayed to a user is to capture it and
 compare it against expected results. This can get wonky as the UI evolves and
@@ -89,7 +89,7 @@ would verify the correct output was displayed by checking the tags::
 
 
 Testing Input
-^^^^^^^^^^^^^
+-------------
 
 The same tagging concept for writing is available to reading user input as well.
 There is a corresponding ``get_write_tags`` method for retrieving these tags.

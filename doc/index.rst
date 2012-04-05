@@ -82,6 +82,16 @@ Built RPMs can be found at: `<http://jdob.fedorapeople.org/repo/>`_
 
 Source code can be found at: `<https://github.com/jdob/okaara/>`_
 
+Usage Documentation
+-------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   prompt
+   progress
+   shell
+
 API Documentation
 -----------------
 
