@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:		    python-okaara
-Version:        1.0.14
+Version:        1.0.15
 Release:	    1%{?dist}
 Summary:	    Python command line utilities
 
@@ -56,6 +56,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Fri May 04 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.15-1
+- Renamed spec as per fedora packaging conventions (jason.dobies@redhat.com)
+
 * Wed Apr 04 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.14-1
 - Added create methods to CLI itself and default exit code for commands
   (jason.dobies@redhat.com)
