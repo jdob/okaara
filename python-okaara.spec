@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.15
+Version:        1.0.16
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -56,6 +56,10 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Fri May 11 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.16-1
+- Corrections to the spec for fedora guidelines (jason.dobies@redhat.com)
+- Cleanup of spec whitespace (jason.dobies@redhat.com)
+
 * Fri May 04 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.15-1
 - Renamed spec as per fedora packaging conventions (jason.dobies@redhat.com)
 
