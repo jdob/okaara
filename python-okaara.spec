@@ -10,7 +10,7 @@ Summary:        Python command line utilities
 Group:          Development/Tools
 License:        GPLv2
 URL:            https://github.com/jdob/okaara
-Source0:        %{name}-%{version}.tar.gz
+Source0:        http://jdob.fedorapeople.org/okaara-src/%{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
@@ -18,7 +18,7 @@ BuildRequires:  python-setuptools
 Requires:       python >= 2.4
 
 %description
-Library of Python functions that facilitate the creation of command-line interfaces.
+Python library to facilitate the creation of command-line interfaces.
 
 %prep
 %setup -q
