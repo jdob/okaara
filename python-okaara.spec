@@ -2,20 +2,20 @@
 
 # -- headers ------------------------------------------------------------------
 
-Name:		    python-okaara
+Name:           python-okaara
 Version:        1.0.15
-Release:	    1%{?dist}
-Summary:	    Python command line utilities
+Release:        1%{?dist}
+Summary:        Python command line utilities
 
-Group:		    Development/Tools
-License:	    GPLv2
-URL:		    https://github.com/jdob/okaara
+Group:          Development/Tools
+License:        GPLv2
+URL:            https://github.com/jdob/okaara
 Source0:        %{name}-%{version}.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
 BuildRequires:  python-setuptools
-Requires:	    python >= 2.4
+Requires:       python >= 2.4
 
 %description
 Library of Python functions that facilitate the creation of command-line interfaces.
