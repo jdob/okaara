@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.17
+Version:        1.0.18
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -58,6 +58,12 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Fri May 18 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.18-1
+- Minor spec tweaks for Fedora packaging guidelines (jason.dobies@redhat.com)
+- Added license copy and inclusion in the RPM (jason.dobies@redhat.com)
+- Added ability to configure text to automatically prefix command option
+  descriptions based on their required attribute (jason.dobies@redhat.com)
+
 * Fri May 11 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.17-1
 - Source file header clean up
 
