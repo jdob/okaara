@@ -15,6 +15,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
 BuildRequires:  python-setuptools
+BuildRequires:  python2-devel
 Requires:       python >= 2.4
 
 %description
@@ -50,7 +51,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%{python_sitelib}/okaara/*
+%{python_sitelib}/okaara/
 %{python_sitelib}/okaara*.egg-info
 %doc LICENSE
 
