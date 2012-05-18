@@ -52,6 +52,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %{python_sitelib}/okaara/*
 %{python_sitelib}/okaara*.egg-info
+%doc LICENSE
 
 # -- changelog ----------------------------------------------------------------
 
