@@ -104,6 +104,12 @@ class Command:
     leaves in the CLI tree. Each command is tied to a single python method and
     will invoke that method with whatever arguments follow it.
     """
+
+    # When printing the usage for a command, the description for any options
+    # is prefixed with one of these two values depending on its required value
+    REQUIRED_OPTION_PREFIX = ''
+    OPTIONAL_OPTION_PREFIX = ''
+
     def __init__(self, name, description, method, usage_description=None, parser=None):
         self.name = name
         self.description = description
@@ -191,7 +197,7 @@ class Command:
         """
         self.option_groups.append(option_group)
 
-    def create_option(self, name, description, aliases=None, required=True, allow_multiple=False):
+    def create_option(self, name, description, aliases=None, required=True, allow_multiple=False, default=None):
         """
         Creates a new option for this command. An option is an argument to the
         command line call that accepts a value.
@@ -227,10 +233,13 @@ class Command:
                will be a list of values in the order in which the user entered them
         :type  allow_multiple: bool
 
+        :param default: The default value for optional options
+        :type  default: None
+
         :return: instance representing the option
         :rtype:  PulpCliOption
         """
-        option = Option(name, description, required=required, allow_multiple=allow_multiple, aliases=aliases)
+        option = Option(name, description, required=required, allow_multiple=allow_multiple, aliases=aliases, default=default)
         self.add_option(option)
         return option
 
@@ -356,9 +365,15 @@ class Command:
             for o in options:
                 triggers = _assemble_triggers(o)
 
+                # Prefix the description accordingly
+                if o.required:
+                    description = self.__class__.REQUIRED_OPTION_PREFIX + o.description
+                else:
+                    description = self.__class__.OPTIONAL_OPTION_PREFIX + o.description
+
                 # Generate template
                 template = '%s' + '%-' + str(max_width) + 's - %s'
-                output = template % (' ' * (indent + step), triggers, o.description)
+                output = template % (' ' * (indent + step), triggers, description)
                 wrapped_output = prompt.wrap(output, remaining_line_indent=(indent + step + max_width + 3))
 
                 prompt.write(wrapped_output, skip_wrap=True)
