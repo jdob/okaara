@@ -89,7 +89,7 @@ Usage Documentation
 -------------------
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    prompt
    progress

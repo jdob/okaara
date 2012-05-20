@@ -127,7 +127,7 @@ class Command:
 
     def execute(self, args):
         """
-        Executes this command, passing the remaining arguments into OptParse to
+        Executes this command, passing the remaining arguments into optparse to
         process.
 
         :param args: any arguments that remained after parsing the command line

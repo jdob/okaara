@@ -133,6 +133,25 @@ create user command above can be added to a simple CLI using the following::
 Advanced Usage
 ^^^^^^^^^^^^^^
 
+Conventions
+-----------
+
+Throughout the APIs there are a number of methods that begin with either ``add_``
+or ``create_``. The add methods are used with object instances directly, such
+as to add a previously instantiated command to a section. The create methods
+are syntactic sugar to shortcut the object creation and return the appropriate
+instantiated object. The end result is the same, it's simply a matter of
+stylistic preference.
+
+Multiple Option Values
+----------------------
+
+If an option is created with the ``allow_multiple`` parameter set to true, users
+can specify the option multiple times on the command line. All of the values will
+be provided to the command's method when invoked. In this case, the value of the
+option in the keyword arguments will *always* be a list, regardless of whether
+or not the user elected to specify multiple values.
+
 Option Description Prefixes
 ---------------------------
 
@@ -157,3 +176,9 @@ and make them available in the keyword arguments to the command's method. The
 likely usage at that point will be to iterate over the keyword arguments for
 each provided value.
 
+CLI Map
+-------
+
+The ``print_cli_map`` method in the CLI is used to display the hierarchy of
+sections, subsections, and commands in the CLI. This call can be wired to a
+command in the CLI itself to provide this ability for users.
