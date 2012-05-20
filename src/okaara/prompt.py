@@ -490,8 +490,8 @@ class Prompt:
         The items selected by the user are returned.
 
         :return: list of indices of the items the user selected, empty list if none are selected;
-                 None is returned if the user selects to abort the menu
-        :rtype:  list of int or None
+                 ABORT is returned if the user selects to abort the menu
+        :rtype:  list or ABORT
         """
         selected_indices = []
 
@@ -600,8 +600,9 @@ class Prompt:
                                   each section
         :type  section_post_text: str
 
-        :return: selected indices for each list specified in each section; see above
-        :rtype:  dict {str : list[int]}
+        :return: selected indices for each list specified in each section; ABORT
+                 if the user elected to abort the selection
+        :rtype:  dict {str : list[int]} or ABORT
         """
         selected_index_map = {}
         for key in section_items:
