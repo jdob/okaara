@@ -691,7 +691,9 @@ class Prompt:
     def prompt_menu(self, question, menu_values, interruptable=True):
         """
         Displays a list of items, allowing the user to select a single item in the
-        list. The selected value is returned.
+        list. The index of the selected item is returned. If interruptable is
+        set to true and the user exits (through ctrl+c), the ABORT constant
+        is returned.
 
         :param question: displayed to the user prior to rendering the list
         :type  question: str
@@ -700,8 +702,8 @@ class Prompt:
                             will be one of the items in this list
         :type  menu_values: list of str
 
-        :return: index of the selected item; None if the user elected to abort
-        :rtype:  int or None
+        :return: index of the selected item; ABORT if the user elected to abort
+        :rtype:  int or ABORT
         """
 
         self.write(question)

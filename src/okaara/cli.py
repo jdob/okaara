@@ -9,6 +9,8 @@ from optparse import OptionParser, Values
 import os
 import sys
 
+from prompt import Prompt
+
 # -- exceptions ---------------------------------------------------------------
 
 class InvalidStructure(Exception):
@@ -107,7 +109,7 @@ class Command:
 
     # When printing the usage for a command, the description for any options
     # is prefixed with one of these two values depending on its required value
-    REQUIRED_OPTION_PREFIX = ''
+    REQUIRED_OPTION_PREFIX = '(required) '
     OPTIONAL_OPTION_PREFIX = ''
 
     def __init__(self, name, description, method, usage_description=None, parser=None):
@@ -637,8 +639,8 @@ class Cli:
     create the desired CLI hierarchy.
     """
 
-    def __init__(self, prompt):
-        self.prompt = prompt
+    def __init__(self, prompt=None):
+        self.prompt = prompt or Prompt()
 
         # Hidden, "special" Section that represents the base of the command structure;
         # this simplifies calls into the recursive methods

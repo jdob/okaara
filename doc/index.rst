@@ -75,6 +75,9 @@ In Okaara, a CLI provides the ability to structure and execute multiple, differe
 commands to a single script. Commands may be grouped into sections to provide a
 flexible organizational structure for the provided functionality.
 
+For more information on the CLI module, see the :doc:`usage and examples page<cli>`
+or the :doc:`CLI module API documentation <cli-api>`.
+
 Download
 --------
 
@@ -90,6 +93,7 @@ Usage Documentation
 
    prompt
    progress
+   cli
    shell
 
 API Documentation
