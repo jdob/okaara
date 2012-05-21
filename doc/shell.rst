@@ -32,9 +32,10 @@ the appropriate menu items for that screen using the ``add_menu_item`` method.
 Menu items are instances of the ``MenuItem`` class and effectively pair the
 following pieces:
 
-* The trigger used to invoke the item (e.g. 'q' for quit)
-* The item description to show to the user when rendering the menu
-* The function to invoke when the item is selected by the user
+* The trigger used to invoke the item (e.g. 'q' for quit). Multiple triggers
+  may be passed as a list and there are no restrictions on the length of a trigger.
+* The item description to show to the user when rendering the menu.
+* The function to invoke when the item is selected by the user.
 
 There are some other things to tweak in a menu item, but those are the basics
 and good enough for now.
@@ -50,6 +51,14 @@ displayed to the user. Additionally, the shell has built in menu functions
 for navigating directly back to the home screen. The first screen added to the
 shell will be designated as the home screen, however this can later be changed
 by specifying ``is_home=True`` when adding a different screen.
+
+Once the shell instance is configured, it begins the input loop through the
+``start`` method. The loop will continue to run and accept user input until
+the ``stop`` method on the shell instance is called. Alternatively, the
+``safe_start`` method can be used to begin the shell. The difference between
+the two is that the latter will restart the input loop in the event an
+exception occurs (the one caveat is that a SystemExit exception will still
+cause the loop to be interrupted.
 
 A sample shell can be found in the samples section of the source code or at:
 `<https://github.com/jdob/okaara/blob/master/samples/sample_shell.py>`_

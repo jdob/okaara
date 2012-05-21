@@ -27,9 +27,10 @@ class HomeScreen(Screen):
         self.prompt = shell.prompt
 
         self.add_menu_item(MenuItem(['s', 'simple'], 'simple prompt', self.simple))
+        self.add_menu_item(MenuItem('e', 'exits the shell', self.shell.stop))
 
     def simple(self):
-        name = self.prompt.prompt('Enter your name:')
+        name = self.prompt.prompt('Enter your name: ')
         self.prompt.write('Hello %s' % name)
 
 if __name__ == '__main__':
