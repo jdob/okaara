@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.18
+Version:        1.0.19
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -58,6 +58,14 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Wed May 23 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.19-1
+- Changed RPM macro to adhere to Fedora packaging standards
+  (jason.dobies@redhat.com)
+- Work on the shell user docs (jason.dobies@redhat.com)
+- Corrected incorrect docstrings (jason.dobies@redhat.com)
+- More advanced usage for CLIs (jason.dobies@redhat.com)
+- Significant work towards the CLI documentation (jason.dobies@redhat.com)
+
 * Fri May 18 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.18-1
 - Minor spec tweaks for Fedora packaging guidelines (jason.dobies@redhat.com)
 - Added license copy and inclusion in the RPM (jason.dobies@redhat.com)
