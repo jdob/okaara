@@ -14,6 +14,7 @@ Source0:        http://jdob.fedorapeople.org/okaara-src/%{name}-%{version}.tar.g
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
+BuildRequires:  python-nose
 BuildRequires:  python-setuptools
 BuildRequires:  python2-devel
 Requires:       python >= 2.4
@@ -42,7 +43,14 @@ pushd src
 popd
 rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 
-# -- clean -----------------------------------------------------------------------
+# -- check --------------------------------------------------------------------
+
+%check
+pushd test
+nosetests
+popd
+
+# -- clean --------------------------------------------------------------------
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -50,7 +58,6 @@ rm -rf $RPM_BUILD_ROOT
 # -- files --------------------------------------------------------------------
 
 %files
-%defattr(-,root,root,-)
 %{python_sitelib}/okaara/
 %{python_sitelib}/okaara*.egg-info
 %doc LICENSE
