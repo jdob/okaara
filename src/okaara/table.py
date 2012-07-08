@@ -32,16 +32,24 @@ class TableBag(object):
                  col_separator=' ',
                  table_max_width=None,
                  wrap_policy=WRAP_POLICY_TRUNCATE,
-                 header_divider_tick='=', ):
+                 header_divider_tick='=',
+                 header_color=None,
+                 row_colors=None,
+                 color_separators=True):
 
         self.num_cols = num_cols
 
+        # Width Calculations
         self.col_widths = col_widths
-        self.col_separator = col_separator
         self.wrap_policy = wrap_policy
         self.table_max_width = table_max_width
 
+        # Look & Feel
+        self.col_separator = col_separator
         self.header_divider_tick = header_divider_tick
+        self.header_color = header_color
+        self.row_colors = row_colors
+        self.color_separators = color_separators
 
         self.validate()
 
@@ -90,17 +98,22 @@ class Table(object):
 
         # Render the header information if specified
         if headers is not None:
-            self.render_line(col_widths, headers)
+            self.render_line(col_widths, headers, self.table_bag.header_color)
             header_divider = self.table_bag.header_divider_tick * table_width
             self.prompt.write(header_divider)
 
         # Render each line
-        for line in data:
-            self.render_line(col_widths, line)
+        for i, line in enumerate(data):
+            text_color = None
+
+            if self.table_bag.row_colors is not None:
+                text_color = self.table_bag.row_colors[i % len(self.table_bag.row_colors)]
+
+            self.render_line(col_widths, line, text_color)
 
     # -- render pieces --------------------------------------------------------
 
-    def render_line(self, col_widths, line):
+    def render_line(self, col_widths, line, text_color):
 
         # In the event of a wrap policy, this will track the text per column
         # to be wrapped
@@ -123,9 +136,17 @@ class Table(object):
             # the next column correctly
             text += ' ' * (width - len(text))
 
+            # Color the text if specified (before the separator is added)
+            if text_color is not None and not self.table_bag.color_separators:
+                text = self.prompt.color(text, text_color)
+
             # Tack on the column separator if not the last column
             if i < (len(col_widths) - 1):
                 text += self.table_bag.col_separator
+
+            # If the separators should be colored, do them now
+            if text_color is not None and self.table_bag.color_separators:
+                text = self.prompt.color(text, text_color)
 
             # Time to finally write the column to the screen
             self.prompt.write(text, new_line=False, skip_wrap=True)
@@ -148,9 +169,17 @@ class Table(object):
                     text = col_overflow_list.pop(0)
                     text += ' ' * (col_widths[i] - len(text))
 
+                # Color the text if specified (before the separator is added)
+                if text_color is not None and not self.table_bag.color_separators:
+                    text = self.prompt.color(text, text_color)
+
                 # Add in the column separator
                 if i < (len(col_widths) - 1):
                     text += self.table_bag.col_separator
+
+                # If the separators should be colored, do them now
+                if text_color is not None and self.table_bag.color_separators:
+                    text = self.prompt.color(text, text_color)
 
                 self.prompt.write(text, new_line=False, skip_wrap=True)
 
@@ -188,17 +217,35 @@ class Table(object):
 
 if __name__ == '__main__':
 
-    from okaara.prompt import Prompt
-    prompt = Prompt()
+    import okaara.prompt
+    p = okaara.prompt.Prompt()
 
     bag = TableBag(4, table_max_width=60, wrap_policy=WRAP_POLICY_WRAP, col_separator=' | ')
-    table = Table(prompt, bag)
+    table = Table(p, bag)
 
     data = [
         ['aaaaa', 'bbbbb', 'ccccc', 'ddddd'],
         ['eeeeeeee', 'ffff', 'gggggggg', 'hhhhhhhhhhhhhhh'],
+        ['iiii', 'jjjj', 'kk', 'lllllllllllll'],
+        ['m', 'n', 'ooo', 'ppppppp'],
     ]
 
     headers = ['Column 1', 'Column 2', 'Really Long Column 3','Column 4']
+
+    table.render(data, headers=headers)
+
+    p.write('')
+    p.write('')
+
+    bag.header_color = okaara.prompt.COLOR_BG_BLUE
+    bag.row_colors = [okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE]
+    bag.color_separators = True
+
+    table.render(data, headers=headers)
+
+    p.write('')
+    p.write('')
+
+    bag.color_separators = False
 
     table.render(data, headers=headers)
