@@ -98,20 +98,27 @@ class Table(object):
 
         # Render the header information if specified
         if headers is not None:
-            self.render_line(col_widths, headers, self.table_bag.header_color)
-            header_divider = self.table_bag.header_divider_tick * table_width
-            self.prompt.write(header_divider)
+            self.render_headers(col_widths, headers, self.table_bag.header_color)
+            self.render_header_divider(table_width)
 
         # Render each line
         for i, line in enumerate(data):
             text_color = None
 
+            # Alternate across each row color
             if self.table_bag.row_colors is not None:
                 text_color = self.table_bag.row_colors[i % len(self.table_bag.row_colors)]
 
             self.render_line(col_widths, line, text_color)
 
     # -- render pieces --------------------------------------------------------
+
+    def render_headers(self, col_widths, headers, text_color):
+        self.render_line(col_widths, headers, text_color)
+
+    def render_header_divider(self, table_width):
+        header_divider = self.table_bag.header_divider_tick * table_width
+        self.prompt.write(header_divider)
 
     def render_line(self, col_widths, line, text_color):
 
@@ -228,6 +235,7 @@ if __name__ == '__main__':
         ['eeeeeeee', 'ffff', 'gggggggg', 'hhhhhhhhhhhhhhh'],
         ['iiii', 'jjjj', 'kk', 'lllllllllllll'],
         ['m', 'n', 'ooo', 'ppppppp'],
+        ['qqqqqq', 'rrrr', 'sss', 't']
     ]
 
     headers = ['Column 1', 'Column 2', 'Really Long Column 3','Column 4']
@@ -238,7 +246,7 @@ if __name__ == '__main__':
     p.write('')
 
     bag.header_color = okaara.prompt.COLOR_BG_BLUE
-    bag.row_colors = [okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE]
+    bag.row_colors = [okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE, okaara.prompt.COLOR_CYAN]
     bag.color_separators = True
 
     table.render(data, headers=headers)
