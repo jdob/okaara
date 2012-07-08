@@ -17,7 +17,6 @@ BuildArch:      noarch
 BuildRequires:  python-nose
 BuildRequires:  python-setuptools
 BuildRequires:  python2-devel
-Requires:       python >= 2.4
 
 %description
 Python library to facilitate the creation of command-line interfaces.
