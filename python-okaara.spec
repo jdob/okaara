@@ -45,6 +45,7 @@ rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 # -- check --------------------------------------------------------------------
 
 %check
+export PYTHONPATH=$RPM_BUILD_ROOT/%{python_sitelib}
 pushd test
 nosetests
 popd
@@ -67,7 +68,7 @@ rm -rf $RPM_BUILD_ROOT
 * Sun Jul 08 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.20-1
 - Removing the explicit python version requirement since it's not needed on
   Fedora (might still be needed on RHEL5). (jason.dobies@redhat.com)
-- Added %%check section and %%files change for fedora packaging
+- Added %check section and %files change for fedora packaging
   (jason.dobies@redhat.com)
 
 * Wed May 23 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.19-1
