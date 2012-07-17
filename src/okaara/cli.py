@@ -53,12 +53,15 @@ class Option:
     """
     Represents an input to a command, either optional or required.
     """
-    def __init__(self, name, description, required=True, allow_multiple=False, aliases=None, default=None):
+    def __init__(self, name, description, required=True, allow_multiple=False,
+                 aliases=None, default=None, validate_func=None, parse_func=None):
         self.name = name
         self.description = description
         self.required = required
         self.allow_multiple = allow_multiple
         self.default = default
+        self.validate_func = validate_func
+        self.parse_func = parse_func
 
         if aliases is not None and not isinstance(aliases, (list, tuple)):
             aliases = [aliases]
@@ -199,7 +202,8 @@ class Command:
         """
         self.option_groups.append(option_group)
 
-    def create_option(self, name, description, aliases=None, required=True, allow_multiple=False, default=None):
+    def create_option(self, name, description, aliases=None, required=True, allow_multiple=False,
+                      default=None, validate_func=None, parse_func=None):
         """
         Creates a new option for this command. An option is an argument to the
         command line call that accepts a value.
@@ -216,6 +220,18 @@ class Command:
 
         The default parser will strip off the leading hyphens when it makes the
         values available to the command's method.
+
+        The validate_func is run against the user-specified value to verify
+        it. If the value is valid, this method should do nothing. In the event
+        the value is invalid, an exception should be raised. The signature of
+        this method must take a single argument which will be the user-specified
+        value. This will always be called; if the user did not specify the
+        option the value will be None.
+
+        The parse_func functions in a similar manner. If specified, it will be
+        run against the user-specified value. The return from this call will
+        be what is passed to the command's execution. This will always be
+        called; if the user did not specify the option the value will be None.
 
         :param name: trigger to set the option
         :type  name: str
@@ -235,13 +251,22 @@ class Command:
                will be a list of values in the order in which the user entered them
         :type  allow_multiple: bool
 
-        :param default: The default value for optional options
+        :param default: the default value for optional options
         :type  default: None
+
+        :param validate_func: if specified, this function will be applied to
+               the user-specified value
+        :type  validate_func: callable
+
+        :param parse_func: if specified, this function will be applied to the
+               user-specified value and its return will replace that value
+        :type  parse_func: callable
 
         :return: instance representing the option
         :rtype:  PulpCliOption
         """
-        option = Option(name, description, required=required, allow_multiple=allow_multiple, aliases=aliases, default=default)
+        option = Option(name, description, required=required, allow_multiple=allow_multiple, aliases=aliases,
+                        default=default, validate_func=validate_func, parse_func=parse_func)
         self.add_option(option)
         return option
 
@@ -328,6 +353,20 @@ class Command:
                 parser.add_option(dest=o.name, help=o.description, action=action, default=o.default, *name_list)
 
         options, remaining_args = parser.parse_args(input_args)
+
+        # Apply the validation function for any options that define it
+        validate_options = [o for o in self.all_options() if isinstance(o, Option) and o.validate_func is not None]
+
+        for vo in validate_options:
+            vo.validate_func(options.__dict__[vo.name])
+
+        # Apply the parsing function for any options that define it
+        parse_options = [o for o in self.all_options() if isinstance(o, Option) and o.parse_func is not None]
+
+        for po in parse_options:
+            new_value = po.parse_func(options.__dict__[po.name])
+            options.__dict__[po.name] = new_value
+
         return remaining_args, options.__dict__
 
     def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
