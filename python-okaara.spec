@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.20
+Version:        1.0.21
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -45,6 +45,7 @@ rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 # -- check --------------------------------------------------------------------
 
 %check
+export PYTHONPATH=$RPM_BUILD_ROOT/%{python_sitelib}
 pushd test
 nosetests
 popd
@@ -64,10 +65,14 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Mon Jul 09 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.21-1
+- Make sure src is in the python path so tests can run
+  (jason.dobies@redhat.com)
+
 * Sun Jul 08 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.20-1
 - Removing the explicit python version requirement since it's not needed on
   Fedora (might still be needed on RHEL5). (jason.dobies@redhat.com)
-- Added %%check section and %%files change for fedora packaging
+- Added %check section and %files change for fedora packaging
   (jason.dobies@redhat.com)
 
 * Wed May 23 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.19-1
