@@ -56,7 +56,7 @@ class NoCatchErrorParser(OptionParser):
         # so do nothing here.
         pass
 
-class Option:
+class Option(object):
     """
     Represents an input to a command, either optional or required.
     """
@@ -85,7 +85,7 @@ class Flag(Option):
     def __init__(self, name, description, aliases=None):
         Option.__init__(self, name, description, required=False, allow_multiple=False, aliases=aliases)
 
-class OptionGroup:
+class OptionGroup(object):
     """
     Used purely for usage display purposes, options and flags added to a group
     will be rendered in their own section. Their behavior is still the same
@@ -110,7 +110,7 @@ class OptionGroup:
         """
         self.options.append(option)
 
-class Command:
+class Command(object):
     """
     Represents something that should be executed by the CLI. These nodes will be
     leaves in the CLI tree. Each command is tied to a single python method and
@@ -503,7 +503,7 @@ class Command:
                 prompt.write('%s%s' % (' ' * (indent + step), r.name))
 
 
-class Section:
+class Section(object):
     """
     Represents a division of commands in the CLI. Sections may contain other
     sections, which creates a string of arguments used to get to a command
@@ -721,7 +721,7 @@ class Section:
         if self.commands.has_key(name):
             raise InvalidStructure()
 
-class Cli:
+class Cli(object):
     """
     Representation of the CLI being created. Coders should create an instance of
     this class as the basis for the CLI. At that point, calling add_* methods
@@ -1008,7 +1008,7 @@ class Cli:
 
 # -- parsers ------------------------------------------------------------------
 
-class UnknownArgsParser:
+class UnknownArgsParser(object):
     """
     Duck-typed parser that can be passed to a Command. This implementation won't
     expect all of the possible options to be enumerated ahead of time. This is
@@ -1170,7 +1170,7 @@ class UnknownArgsParser:
         else:
             raise exception_class('Parsing aborted')
 
-class PassThroughParser:
+class PassThroughParser(object):
     """
     Duck-typed parser that can be passed to a Command. This implementation won't
     attempt any parsing or validation whatsoever on the command arguments.
