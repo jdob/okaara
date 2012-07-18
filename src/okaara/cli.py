@@ -238,20 +238,16 @@ class Command:
         it. If the value is valid, this method should do nothing. In the event
         the value is invalid, a ValueError or TypeError should be raised.
 
-        The signature of this method must take two arguments:
-
-        * the Option instance itself
-        * the user-specified value
-
-        This will always be called; if the user did not specify the
-        option the value will be None.
+        The signature of this method takes a single argument that is the
+        user-specified value. This function will always be called; if the user
+        did not specify the option the value will be None.
 
         The parse_func functions in a similar manner. If specified, it will be
         run against the user-specified value. The return from this call will
         replace the user-specified value and be passed to the command's
-        execution. The arguments are the same as for validate_func. This will
-        always be called; if the user did not specify the option the value will
-        be None.
+        execution. The arguments are the same as for validate_func. This
+        function will always be called; if the user did not specify the option
+        the value will be None.
 
         The parse_func may raise ValueError or TypeError as well. The behavior
         will be the same as for validate_func, allowing the parse_func, if
@@ -383,7 +379,7 @@ class Command:
 
         for vo in validate_options:
             try:
-                vo.validate_func(vo, options.__dict__[vo.name])
+                vo.validate_func(options.__dict__[vo.name])
             except (ValueError, TypeError), e:
                 # Only catch the expected validation error types; bubble up others
                 self.print_validation_error(prompt, vo, e)
@@ -396,7 +392,7 @@ class Command:
             # Do the same exception handling as for validate to let users
             # combine validate and parse into a single call
             try:
-                new_value = po.parse_func(po, options.__dict__[po.name])
+                new_value = po.parse_func(options.__dict__[po.name])
                 options.__dict__[po.name] = new_value
             except (ValueError, TypeError), e:
                 # Only catch the expected validation error types; bubble up others
