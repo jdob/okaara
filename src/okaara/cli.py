@@ -33,6 +33,13 @@ class CommandUsage(Exception):
         Exception.__init__(self)
         self.missing_options = missing_options
 
+class OptionValidationFailed(Exception):
+    """
+    Raised internal to the CLI structure to indicate a command execution
+    failed because one of the options failed its validation function.
+    """
+    pass
+
 # -- classes ------------------------------------------------------------------
 
 class NoCatchErrorParser(OptionParser):
@@ -128,10 +135,13 @@ class Command:
     def __str__(self):
         return 'Command [%s]' % self.name
 
-    def execute(self, args):
+    def execute(self, prompt, args):
         """
         Executes this command, passing the remaining arguments into optparse to
         process.
+
+        :param prompt: for any output the framework needs to display
+        :type  prompt: Prompt
 
         :param args: any arguments that remained after parsing the command line
                      to determine the command to execute; these are considered
@@ -140,7 +150,10 @@ class Command:
         """
 
         # Parse the command arguments into a dictionary
-        arg_list, kwarg_dict = self.parse_arguments(args)
+        try:
+            arg_list, kwarg_dict = self.parse_arguments(prompt, args)
+        except OptionValidationFailed:
+            return os.EX_DATAERR
 
         # Make sure all of the required arguments have been specified
 
@@ -168,7 +181,7 @@ class Command:
                 clean_key = key
             clean_kwargs[clean_key] = kwarg_dict[key]
 
-        self.method(*arg_list, **clean_kwargs)
+        return self.method(*arg_list, **clean_kwargs)
 
     def add_option(self, option):
         """
@@ -223,15 +236,26 @@ class Command:
 
         The validate_func is run against the user-specified value to verify
         it. If the value is valid, this method should do nothing. In the event
-        the value is invalid, an exception should be raised. The signature of
-        this method must take a single argument which will be the user-specified
-        value. This will always be called; if the user did not specify the
+        the value is invalid, a ValueError or TypeError should be raised.
+
+        The signature of this method must take two arguments:
+
+        * the Option instance itself
+        * the user-specified value
+
+        This will always be called; if the user did not specify the
         option the value will be None.
 
         The parse_func functions in a similar manner. If specified, it will be
         run against the user-specified value. The return from this call will
-        be what is passed to the command's execution. This will always be
-        called; if the user did not specify the option the value will be None.
+        replace the user-specified value and be passed to the command's
+        execution. The arguments are the same as for validate_func. This will
+        always be called; if the user did not specify the option the value will
+        be None.
+
+        The parse_func may raise ValueError or TypeError as well. The behavior
+        will be the same as for validate_func, allowing the parse_func, if
+        applicable, to function as both the validation and parsing logic.
 
         :param name: trigger to set the option
         :type  name: str
@@ -320,7 +344,7 @@ class Command:
             all_options += g.options
         return all_options
 
-    def parse_arguments(self, input_args):
+    def parse_arguments(self, prompt, input_args):
         """
         Parses the arguments passed into this command based on the configured
         options.
@@ -358,16 +382,43 @@ class Command:
         validate_options = [o for o in self.all_options() if isinstance(o, Option) and o.validate_func is not None]
 
         for vo in validate_options:
-            vo.validate_func(options.__dict__[vo.name])
+            try:
+                vo.validate_func(vo, options.__dict__[vo.name])
+            except (ValueError, TypeError), e:
+                # Only catch the expected validation error types; bubble up others
+                self.print_validation_error(prompt, vo, e)
+                raise OptionValidationFailed()
 
         # Apply the parsing function for any options that define it
         parse_options = [o for o in self.all_options() if isinstance(o, Option) and o.parse_func is not None]
 
         for po in parse_options:
-            new_value = po.parse_func(options.__dict__[po.name])
-            options.__dict__[po.name] = new_value
+            # Do the same exception handling as for validate to let users
+            # combine validate and parse into a single call
+            try:
+                new_value = po.parse_func(po, options.__dict__[po.name])
+                options.__dict__[po.name] = new_value
+            except (ValueError, TypeError), e:
+                # Only catch the expected validation error types; bubble up others
+                self.print_validation_error(prompt, po, e)
+                raise OptionValidationFailed()
 
         return remaining_args, options.__dict__
+
+    def print_validation_error(self, prompt, option, exception):
+        """
+        Called when an option's validation function raises a validation error.
+        This call should display a message describing the option that failed
+        and any explanation as to why it did.
+
+        :param option: option instance that failed validation
+        :type  option: Option
+
+        :param exception: exception that was raised from the validation function
+        :type  exception: Exception
+        """
+        prompt.write('Validation failed for argument [%s]:' % option.name)
+        prompt.write('  %s' % exception.args[0])
 
     def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
         """
@@ -828,7 +879,7 @@ class Cli:
             return os.EX_USAGE
         else:
             try:
-                exit_code = command_or_section.execute(remaining_args)
+                exit_code = command_or_section.execute(self.prompt, remaining_args)
 
                 # Default handling; if no code specified, assume ok
                 if exit_code is None:
