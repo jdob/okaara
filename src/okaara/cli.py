@@ -239,15 +239,14 @@ class Command(object):
         the value is invalid, a ValueError or TypeError should be raised.
 
         The signature of this method takes a single argument that is the
-        user-specified value. This function will always be called; if the user
-        did not specify the option the value will be None.
+        user-specified value. This function will only be called if the option
+        is specified by the user.
 
         The parse_func functions in a similar manner. If specified, it will be
         run against the user-specified value. The return from this call will
         replace the user-specified value and be passed to the command's
         execution. The arguments are the same as for validate_func. This
-        function will always be called; if the user did not specify the option
-        the value will be None.
+        function will only be called if the option is specified by the user.
 
         The parse_func may raise ValueError or TypeError as well. The behavior
         will be the same as for validate_func, allowing the parse_func, if
