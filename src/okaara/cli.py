@@ -379,7 +379,9 @@ class Command:
 
         for vo in validate_options:
             try:
-                vo.validate_func(options.__dict__[vo.name])
+                value = options.__dict__[vo.name]
+                if value is not None:
+                    vo.validate_func(value)
             except (ValueError, TypeError), e:
                 # Only catch the expected validation error types; bubble up others
                 self.print_validation_error(prompt, vo, e)
@@ -392,8 +394,10 @@ class Command:
             # Do the same exception handling as for validate to let users
             # combine validate and parse into a single call
             try:
-                new_value = po.parse_func(options.__dict__[po.name])
-                options.__dict__[po.name] = new_value
+                old_value = options.__dict__[po.name]
+                if old_value is not None:
+                    new_value = po.parse_func(old_value)
+                    options.__dict__[po.name] = new_value
             except (ValueError, TypeError), e:
                 # Only catch the expected validation error types; bubble up others
                 self.print_validation_error(prompt, po, e)
