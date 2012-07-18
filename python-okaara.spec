@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.21
+Version:        1.0.22
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -65,6 +65,16 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Wed Jul 18 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.22-1
+- converted to new-style classes so they are easier to subclass.
+  (mhrivnak@redhat.com)
+- Validate and parse functions are no longer applied to options for which the
+  user did not supply any input. (mhrivnak@redhat.com)
+ Added built in validate and parse functions on options
+  (jason.dobies@redhat.com)
+- Some refactoring to support subclasses better (jason.dobies@redhat.com)
+- Added color support (naturally) (jason.dobies@redhat.com)
+
 * Mon Jul 09 2012 Jay Dobies <jason.dobies@redhat.com> 1.0.21-1
 - Make sure src is in the python path so tests can run
   (jason.dobies@redhat.com)
