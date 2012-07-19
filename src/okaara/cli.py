@@ -854,6 +854,16 @@ class Cli(object):
         """
         return self.root_section.remove_subsection(name)
 
+    def remove_command(self, name):
+        """
+        Removes the command with the given name. If no command exists with that
+        name, this call has no effect (no error is raised).
+
+        :param name: name of the command to remove
+        :type  name: str
+        """
+        return self.root_section.remove_command(name)
+
     def run(self, args):
         """
         Driver for the CLI. The specified arguments will be parsed to determine
