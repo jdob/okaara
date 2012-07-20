@@ -81,7 +81,7 @@ or the :doc:`CLI module API documentation <cli-api>`.
 Download
 --------
 
-Built RPMs can be found at: `<http://jdob.fedorapeople.org/repo/>`_
+Built RPMs can be found in Fedora.
 
 Source code can be found at: `<https://github.com/jdob/okaara/>`_
 
