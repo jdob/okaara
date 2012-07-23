@@ -61,16 +61,23 @@ class Table(object):
         self.row_colors = row_colors
         self.color_separators = color_separators
 
+        # Calculated Values
+        self.__dict__['table_width'], self.__dict__['col_widths'] = self.calculate_widths()
+
+        # Make sure the values are sane
+        self.validate()
+
     def __setattr__(self, name, value):
         # Only start running validate on attribute changes, not the first addition.
         # The constructor will manually call validate after all of the initial
         # values are set.
-        run_validate = hasattr(self, name)
+        is_change = hasattr(self, name)
 
         super(Table, self).__setattr__(name, value)
 
-        if run_validate:
+        if is_change:
             self.validate()
+            self.__dict__['table_width'], self.__dict__['col_widths'] = self.calculate_widths()
 
     def validate(self):
 
@@ -87,13 +94,10 @@ class Table(object):
 
     def render(self, data, headers=None):
 
-        # Calculations
-        table_width, col_widths = self.calculate_widths()
-
         # Render the header information if specified
         if headers is not None:
-            self.render_headers(col_widths, headers, self.header_color)
-            self.render_header_divider(table_width)
+            self.render_headers(headers, self.header_color)
+            self.render_header_divider()
 
         # Render each line
         for i, line in enumerate(data):
@@ -103,25 +107,25 @@ class Table(object):
             if self.row_colors is not None:
                 text_color = self.row_colors[i % len(self.row_colors)]
 
-            self.render_line(col_widths, line, text_color)
+            self.render_line(line, text_color)
 
     # -- render pieces --------------------------------------------------------
 
-    def render_headers(self, col_widths, headers, text_color):
-        self.render_line(col_widths, headers, text_color)
+    def render_headers(self, headers, text_color):
+        self.render_line(headers, text_color)
 
-    def render_header_divider(self, table_width):
-        header_divider = self.header_divider_tick * table_width
+    def render_header_divider(self):
+        header_divider = self.header_divider_tick * self.table_width
         self.prompt.write(header_divider)
 
-    def render_line(self, col_widths, line, text_color):
+    def render_line(self, line, text_color):
 
         # In the event of a wrap policy, this will track the text per column
         # to be wrapped
-        overflow_lines = [[] for i in range(0, len(col_widths))]
+        overflow_lines = [[] for i in range(0, len(self.col_widths))]
 
-        for i in range(0, len(col_widths)):
-            width = col_widths[i]
+        for i in range(0, len(self.col_widths)):
+            width = self.col_widths[i]
             text = line[i]
 
             if self.wrap_policy is WRAP_POLICY_TRUNCATE:
@@ -142,7 +146,7 @@ class Table(object):
                 text = self.prompt.color(text, text_color)
 
             # Tack on the column separator if not the last column
-            if i < (len(col_widths) - 1):
+            if i < (len(self.col_widths) - 1):
                 text += self.col_separator
 
             # If the separators should be colored, do them now
@@ -164,18 +168,18 @@ class Table(object):
 
                 # No overflow for the column, write spaces
                 if len(col_overflow_list) is 0:
-                    text = ' ' * col_widths[i]
+                    text = ' ' * self.col_widths[i]
 
                 else:
                     text = col_overflow_list.pop(0)
-                    text += ' ' * (col_widths[i] - len(text))
+                    text += ' ' * (self.col_widths[i] - len(text))
 
                 # Color the text if specified (before the separator is added)
                 if text_color is not None and not self.color_separators:
                     text = self.prompt.color(text, text_color)
 
                 # Add in the column separator
-                if i < (len(col_widths) - 1):
+                if i < (len(self.col_widths) - 1):
                     text += self.col_separator
 
                 # If the separators should be colored, do them now
@@ -216,6 +220,7 @@ class Table(object):
 
         return table_width, col_widths
 
+    
 if __name__ == '__main__':
 
     import okaara.prompt
