@@ -11,6 +11,8 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import copy
+
 # -- constants ----------------------------------------------------------------
 
 # Causes values in a column to be truncated if they exceed the col width
@@ -62,10 +64,12 @@ class Table(object):
         self.color_separators = color_separators
 
         # Calculated Values
+        self.table_width = None
+        self.col_widths = None
         self.__dict__['table_width'], self.__dict__['col_widths'] = self.calculate_widths()
 
         # Make sure the values are sane
-        self.validate()
+        self._validate()
 
     def __setattr__(self, name, value):
         # Only start running validate on attribute changes, not the first addition.
@@ -76,10 +80,10 @@ class Table(object):
         super(Table, self).__setattr__(name, value)
 
         if is_change:
-            self.validate()
+            self._validate()
             self.__dict__['table_width'], self.__dict__['col_widths'] = self.calculate_widths()
 
-    def validate(self):
+    def _validate(self):
 
         if self.num_cols < 1:
             raise InvalidTableSettings('Number of columns must be greater than 0')
@@ -92,6 +96,8 @@ class Table(object):
             if max_column_width > self.table_max_width:
                 raise InvalidTableSettings('Sum of maximum column widths must be less than or equal to the table width')
 
+    # -- public ---------------------------------------------------------------
+
     def render(self, data, headers=None):
 
         # Render the header information if specified
@@ -99,86 +105,58 @@ class Table(object):
             self.render_headers(headers, self.header_color)
             self.render_header_divider()
 
+        # Convert the data into table cells
+        cells = self.parse_cells(data)
+
         # Render each line
-        for i, line in enumerate(data):
+        for row_num, line in enumerate(cells):
             text_color = None
 
             # Alternate across each row color
             if self.row_colors is not None:
-                text_color = self.row_colors[i % len(self.row_colors)]
+                text_color = self.row_colors[row_num % len(self.row_colors)]
 
-            self.render_line(line, text_color)
+            self.render_row(line, text_color)
+            self.render_row_divider(row_num)
 
     # -- render pieces --------------------------------------------------------
 
     def render_headers(self, headers, text_color):
-        self.render_line(headers, text_color)
+        header_cells = self.parse_cells([headers])
+
+        self.render_row(header_cells[0], text_color)
 
     def render_header_divider(self):
         header_divider = self.header_divider_tick * self.table_width
         self.prompt.write(header_divider)
 
-    def render_line(self, line, text_color):
+    def render_row(self, row_cells, text_color):
 
-        # In the event of a wrap policy, this will track the text per column
-        # to be wrapped
-        overflow_lines = [[] for i in range(0, len(self.col_widths))]
+        # Going to pop elements out of the cells, so copy them first
+        row_cells = copy.deepcopy(row_cells)
 
-        for i in range(0, len(self.col_widths)):
-            width = self.col_widths[i]
-            text = line[i]
+        def has_more_content(cells):
+            return len([c for c in cells if c.has_more_lines()]) > 0
 
-            if self.wrap_policy is WRAP_POLICY_TRUNCATE:
-                text = text[0:width]
-            elif self.wrap_policy is WRAP_POLICY_WRAP:
-                wrapped = self.prompt.wrap(text, wrap_width=width)
+        while has_more_content(row_cells):
+            for i in range(0, len(row_cells)):
+                cell = row_cells[i]
+                width = self.col_widths[i]
 
-                split_lines = wrapped.split('\n')
-                text = split_lines[0]
-                overflow_lines[i] = split_lines[1:]
-
-            # Pad the right side of the text with enough spaces to line up
-            # the next column correctly
-            text += ' ' * (width - len(text))
-
-            # Color the text if specified (before the separator is added)
-            if text_color is not None and not self.color_separators:
-                text = self.prompt.color(text, text_color)
-
-            # Tack on the column separator if not the last column
-            if i < (len(self.col_widths) - 1):
-                text += self.col_separator
-
-            # If the separators should be colored, do them now
-            if text_color is not None and self.color_separators:
-                text = self.prompt.color(text, text_color)
-
-            # Time to finally write the column to the screen
-            self.prompt.write(text, new_line=False, skip_wrap=True)
-
-        # Finished with the first pass at the row, so add a newline
-        self.prompt.write('', new_line=True)
-
-        # Handle any overflow
-        while len([o for o in overflow_lines if len(o) > 0]) > 0:
-
-            # Loop over each overflow list and if present, write the first
-            # item in the list
-            for i, col_overflow_list in enumerate(overflow_lines):
-
-                # No overflow for the column, write spaces
-                if len(col_overflow_list) is 0:
-                    text = ' ' * self.col_widths[i]
-
+                if not cell.has_more_lines():
+                    text = ' ' * width
                 else:
-                    text = col_overflow_list.pop(0)
-                    text += ' ' * (self.col_widths[i] - len(text))
+                    text = cell.pop_line()
 
-                # Color the text if specified (before the separator is added)
-                if text_color is not None and not self.color_separators:
-                    text = self.prompt.color(text, text_color)
+                    # Pad the right side of the text with enough spaces to line up
+                    # the next column correctly
+                    text += ' ' * (width - len(text))
 
-                # Add in the column separator
+                    # Color the text if specified (before the separator is added)
+                    if text_color is not None and not self.color_separators:
+                        text = self.prompt.color(text, text_color)
+
+                # Tack on the column separator if not the last column
                 if i < (len(self.col_widths) - 1):
                     text += self.col_separator
 
@@ -186,10 +164,20 @@ class Table(object):
                 if text_color is not None and self.color_separators:
                     text = self.prompt.color(text, text_color)
 
+                # Time to finally write the column to the screen
                 self.prompt.write(text, new_line=False, skip_wrap=True)
 
-            # End the line
+            # Finished with the first pass at the row, so add a newline
             self.prompt.write('', new_line=True)
+
+    def render_row_divider(self, row_num):
+        """
+        Renders a divider after the given row.
+
+        :param row_num: indicates the last row that was rendered
+        :type  row_num: int
+        """
+        pass
 
     # -- calculations ---------------------------------------------------------
 
@@ -220,7 +208,63 @@ class Table(object):
 
         return table_width, col_widths
 
-    
+    def parse_cells(self, data):
+        """
+        For each of the given cells, breaks apart the contents into what
+        should be in each cell of the table based on the table's configuration
+        (column widths, column separator, etc.).
+
+        @return:
+        """
+
+        cells = [[] for i in data] # initialize each row to a list
+        for row_num, row in enumerate(data):
+
+            for col_num in range(0, len(row)):
+                cell = CellData()
+                cells[row_num].append(cell) # each row is a list of cells
+
+                col_width = self.col_widths[col_num]
+                text = row[col_num]
+
+                # Apply the wrap policy to transform the text
+
+                if self.wrap_policy is WRAP_POLICY_TRUNCATE:
+                    text = text[0:col_width]
+                    cell.add_line(text)
+
+                elif self.wrap_policy is WRAP_POLICY_WRAP:
+                    wrapped = self.prompt.wrap(text, wrap_width=col_width)
+
+                    split_lines = wrapped.split('\n')
+                    for line in split_lines:
+                        cell.add_line(line)
+
+        return cells
+
+class CellData(object):
+    """
+    Contains the contents of each cell after the wrap policy has been
+    applied. The contents are stored as a list of strings; the list may be
+    longer than 1 if the wrap policy dictates the cell be multi-line.
+    """
+
+    def __init__(self):
+        super(CellData, self).__init__()
+
+        self.lines = []
+
+    def add_line(self, text):
+        self.lines.append(text)
+
+    def pop_line(self):
+        return self.lines.pop(0)
+
+    def has_more_lines(self):
+        return len(self.lines) > 0
+
+# -----------------------------------------------------------------------------
+
 if __name__ == '__main__':
 
     import okaara.prompt
@@ -244,7 +288,6 @@ if __name__ == '__main__':
     p.write('')
 
     table.col_separator = ' | '
-    table.table_max_width = 70
 
     table.render(data, headers=headers)
 
