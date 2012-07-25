@@ -64,26 +64,15 @@ class Table(object):
         self.color_separators = color_separators
 
         # Calculated Values
-        self.table_width = None
-        self.col_widths = None
-        self.__dict__['table_width'], self.__dict__['col_widths'] = self.calculate_widths()
+        self.table_max_width, self.col_widths = self.calculate_widths(table_max_width, col_widths)
 
         # Make sure the values are sane
-        self._validate()
+        self.validate()
 
-    def __setattr__(self, name, value):
-        # Only start running validate on attribute changes, not the first addition.
-        # The constructor will manually call validate after all of the initial
-        # values are set.
-        is_change = hasattr(self, name)
+    def __str__(self):
+        return 'table_max_width [%s] col_widths [%s]' % (self.table_max_width, self.col_widths)
 
-        super(Table, self).__setattr__(name, value)
-
-        if is_change:
-            self._validate()
-            self.__dict__['table_width'], self.__dict__['col_widths'] = self.calculate_widths()
-
-    def _validate(self):
+    def validate(self):
 
         if self.num_cols < 1:
             raise InvalidTableSettings('Number of columns must be greater than 0')
@@ -95,6 +84,9 @@ class Table(object):
             max_column_width = reduce(lambda x, y: x + y, self.col_widths)
             if max_column_width > self.table_max_width:
                 raise InvalidTableSettings('Sum of maximum column widths must be less than or equal to the table width')
+
+            if self.num_cols != len(self.col_widths):
+                raise InvalidTableSettings('Number of columns [%s] must equal the number of column widths specified [%s]' % (self.num_cols, len(self.col_widths)))
 
     # -- public ---------------------------------------------------------------
 
@@ -127,7 +119,7 @@ class Table(object):
         self.render_row(header_cells[0], text_color)
 
     def render_header_divider(self):
-        header_divider = self.header_divider_tick * self.table_width
+        header_divider = self.header_divider_tick * self.table_max_width
         self.prompt.write(header_divider)
 
     def render_row(self, row_cells, text_color):
@@ -181,21 +173,19 @@ class Table(object):
 
     # -- calculations ---------------------------------------------------------
 
-    def calculate_widths(self):
+    def calculate_widths(self, table_max_width, col_widths):
         """
         Calculates the table width and width of each column.
         """
 
         # First step is an expected table width
-        table_width = self.table_max_width or self.prompt.terminal_size()[0]
-
-        # Calculate the column widths if not specified
-        col_widths = self.col_widths
+        table_width = table_max_width or self.prompt.terminal_size()[0]
 
         # If not specified, evenly divide across the table width and throw
         # out any extra space
         if col_widths is None:
-            each_col_width = table_width / (self.num_cols + len(self.col_separator))
+            minus_separators = table_width - ( (self.num_cols - 1) * len(self.col_separator) )
+            each_col_width = minus_separators / self.num_cols
             col_widths = [each_col_width for i in range(0, self.num_cols)]
 
         # If the table width is greater than the total width of the columns,
@@ -262,47 +252,3 @@ class CellData(object):
 
     def has_more_lines(self):
         return len(self.lines) > 0
-
-# -----------------------------------------------------------------------------
-
-if __name__ == '__main__':
-
-    import okaara.prompt
-    p = okaara.prompt.Prompt()
-
-    table = Table(p, 4, table_max_width=60, wrap_policy=WRAP_POLICY_WRAP, col_separator=' ')
-
-    data = [
-        ['aaaaa', 'bbbbb', 'ccccc', 'ddddd'],
-        ['eeeeeeee', 'ffff', 'gggggggg', 'hhhhhhhhhhhhhhh'],
-        ['iiii', 'jjjj', 'kk', 'lllllllllllll'],
-        ['m', 'n', 'ooo', 'ppppppp'],
-        ['qqqqqq', 'rrrr', 'sss', 't']
-    ]
-
-    headers = ['Column 1', 'Column 2', 'Really Long Column 3','Column 4']
-
-    table.render(data, headers=headers)
-
-    p.write('')
-    p.write('')
-
-    table.col_separator = ' | '
-
-    table.render(data, headers=headers)
-
-    p.write('')
-    p.write('')
-
-    table.header_color = okaara.prompt.COLOR_BG_BLUE
-    table.row_colors = [okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE, okaara.prompt.COLOR_CYAN]
-    table.color_separators = True
-
-    table.render(data, headers=headers)
-
-    p.write('')
-    p.write('')
-
-    table.color_separators = False
-
-    table.render(data, headers=headers)
