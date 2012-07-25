@@ -27,12 +27,12 @@ class TableTests(unittest.TestCase):
         col_widths = [10, 10, 10]
         max_size = sum(col_widths)
         t = table.Table(self.prompt, len(col_widths),
-                        col_widths=col_widths, table_max_width=max_size,
+                        col_widths=col_widths, table_width=max_size,
                         col_separator='')
 
         # Verify
         self.assertEqual(t.col_widths, col_widths)
-        self.assertEqual(t.table_max_width, max_size)
+        self.assertEqual(t.table_width, max_size)
 
     def test_equal_table_and_cols_with_separator(self):
         # Setup
@@ -40,12 +40,12 @@ class TableTests(unittest.TestCase):
         separator = ' |'
         max_size = sum(col_widths) + ((len(col_widths) - 1) * len(separator))
         t = table.Table(self.prompt, len(col_widths),
-                        col_widths=col_widths, table_max_width=max_size,
+                        col_widths=col_widths, table_width=max_size,
                         col_separator=separator)
 
         # Verify
         self.assertEqual(t.col_widths, col_widths)
-        self.assertEqual(t.table_max_width, max_size)
+        self.assertEqual(t.table_width, max_size)
 
     def test_larger_col_widths(self):
         # Setup
@@ -54,7 +54,7 @@ class TableTests(unittest.TestCase):
 
         try:
             table.Table(self.prompt, len(col_widths),
-                        col_widths=col_widths, table_max_width=max_size,
+                        col_widths=col_widths, table_width=max_size,
                         col_separator='')
             self.fail()
         except table.InvalidTableSettings:
@@ -65,12 +65,13 @@ class TableTests(unittest.TestCase):
         col_widths = [10, 10]
         max_size = 40
         t = table.Table(self.prompt, len(col_widths),
-                        col_widths=col_widths, table_max_width=max_size,
+                        col_widths=col_widths, table_width=max_size,
                         col_separator='')
+        tw, cw = t.calculate_widths()
 
         # Verify
-        self.assertEqual(t.col_widths, col_widths)
-        self.assertEqual(t.table_max_width, sum(t.col_widths))
+        self.assertEqual(cw, col_widths)
+        self.assertEqual(tw, sum(t.col_widths))
 
     def test_table_width_no_col_widths(self):
         # Setup
@@ -78,11 +79,13 @@ class TableTests(unittest.TestCase):
         max_size = 60
         separator = ' '
         t = table.Table(self.prompt, num_cols,
-                        table_max_width=max_size, col_separator=separator)
+                        table_width=max_size, col_separator=separator)
+
+        tw, cw = t.calculate_widths()
 
         # Verify
         expected_col_widths = [14, 14, 14, 14]
-        self.assertEqual(expected_col_widths, t.col_widths)
+        self.assertEqual(expected_col_widths, cw)
 
         expected_table_width = sum(expected_col_widths) + ((len(expected_col_widths) - 1) * len(separator))
-        self.assertEqual(expected_table_width, t.table_max_width)
+        self.assertEqual(expected_table_width, tw)

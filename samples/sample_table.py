@@ -16,7 +16,7 @@ import okaara.table
 
 p = okaara.prompt.Prompt()
 
-table = okaara.table.Table(p, 4, table_max_width=60, wrap_policy=okaara.table.WRAP_POLICY_WRAP, col_separator=' ')
+table = okaara.table.Table(p, 4, table_width=60, wrap_policy=okaara.table.WRAP_POLICY_WRAP, col_separator=' ')
 
 data = [
     ['aaaaa', 'bbbbb', 'ccccc', 'ddddd'],
@@ -33,21 +33,19 @@ table.render(data, headers=headers)
 p.write('')
 p.write('')
 
-table = okaara.table.Table(p, 4, table_max_width=60, wrap_policy=okaara.table.WRAP_POLICY_WRAP, col_separator=' | ')
+table.col_separator = ' | '
 table.render(data, headers=headers)
 
 p.write('')
 p.write('')
 
-table = okaara.table.Table(p, 4, table_max_width=60, wrap_policy=okaara.table.WRAP_POLICY_WRAP, col_separator=' | ',
-                           header_color=okaara.prompt.COLOR_BG_BLUE, row_colors=[okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE, okaara.prompt.COLOR_CYAN],
-                           color_separators=True)
+table.header_color=okaara.prompt.COLOR_BG_BLUE
+table.row_colors=[okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE, okaara.prompt.COLOR_CYAN]
+table.color_separators=True
 table.render(data, headers=headers)
 
 p.write('')
 p.write('')
 
-table = okaara.table.Table(p, 4, table_max_width=60, wrap_policy=okaara.table.WRAP_POLICY_WRAP, col_separator=' | ',
-                           header_color=okaara.prompt.COLOR_BG_BLUE, row_colors=[okaara.prompt.COLOR_BG_CYAN + okaara.prompt.COLOR_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE, okaara.prompt.COLOR_CYAN],
-                           color_separators=False)
+table.color_separators=False
 table.render(data, headers=headers)

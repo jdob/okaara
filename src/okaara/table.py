@@ -39,7 +39,7 @@ class Table(object):
                  num_cols,
                  col_widths=None,
                  col_separator=' ',
-                 table_max_width=None,
+                 table_width=None,
                  wrap_policy=WRAP_POLICY_TRUNCATE,
                  header_divider_tick='=',
                  header_color=None,
@@ -52,9 +52,9 @@ class Table(object):
         self.num_cols = num_cols
 
         # Width Calculations
+        self.table_width = table_width
         self.col_widths = col_widths
         self.wrap_policy = wrap_policy
-        self.table_max_width = table_max_width
 
         # Look & Feel
         self.col_separator = col_separator
@@ -63,14 +63,11 @@ class Table(object):
         self.row_colors = row_colors
         self.color_separators = color_separators
 
-        # Calculated Values
-        self.table_max_width, self.col_widths = self.calculate_widths(table_max_width, col_widths)
-
         # Make sure the values are sane
         self.validate()
 
     def __str__(self):
-        return 'table_max_width [%s] col_widths [%s]' % (self.table_max_width, self.col_widths)
+        return 'table_max_width [%s] col_widths [%s]' % (self.table_width, self.col_widths)
 
     def validate(self):
 
@@ -82,7 +79,7 @@ class Table(object):
 
         if self.col_widths is not None:
             max_column_width = reduce(lambda x, y: x + y, self.col_widths)
-            if max_column_width > self.table_max_width:
+            if max_column_width > self.table_width:
                 raise InvalidTableSettings('Sum of maximum column widths must be less than or equal to the table width')
 
             if self.num_cols != len(self.col_widths):
@@ -92,13 +89,17 @@ class Table(object):
 
     def render(self, data, headers=None):
 
+        # Recalculate and revalidate
+        table_width, col_widths = self.calculate_widths()
+        self.validate()
+
         # Render the header information if specified
         if headers is not None:
-            self.render_headers(headers, self.header_color)
-            self.render_header_divider()
+            self.render_headers(headers, col_widths, self.header_color)
+            self.render_header_divider(table_width)
 
         # Convert the data into table cells
-        cells = self.parse_cells(data)
+        cells = self.parse_cells(data, col_widths)
 
         # Render each line
         for row_num, line in enumerate(cells):
@@ -108,21 +109,21 @@ class Table(object):
             if self.row_colors is not None:
                 text_color = self.row_colors[row_num % len(self.row_colors)]
 
-            self.render_row(line, text_color)
-            self.render_row_divider(row_num)
+            self.render_row(line, col_widths, text_color)
+            self.render_row_divider(table_width, row_num)
 
     # -- render pieces --------------------------------------------------------
 
-    def render_headers(self, headers, text_color):
-        header_cells = self.parse_cells([headers])
+    def render_headers(self, headers, col_widths, text_color):
+        header_cells = self.parse_cells([headers], col_widths)
 
-        self.render_row(header_cells[0], text_color)
+        self.render_row(header_cells[0], col_widths, text_color)
 
-    def render_header_divider(self):
-        header_divider = self.header_divider_tick * self.table_max_width
+    def render_header_divider(self, table_width):
+        header_divider = self.header_divider_tick * table_width
         self.prompt.write(header_divider)
 
-    def render_row(self, row_cells, text_color):
+    def render_row(self, row_cells, col_widths, text_color):
 
         # Going to pop elements out of the cells, so copy them first
         row_cells = copy.deepcopy(row_cells)
@@ -133,7 +134,7 @@ class Table(object):
         while has_more_content(row_cells):
             for i in range(0, len(row_cells)):
                 cell = row_cells[i]
-                width = self.col_widths[i]
+                width = col_widths[i]
 
                 if not cell.has_more_lines():
                     text = ' ' * width
@@ -149,7 +150,7 @@ class Table(object):
                         text = self.prompt.color(text, text_color)
 
                 # Tack on the column separator if not the last column
-                if i < (len(self.col_widths) - 1):
+                if i < (len(col_widths) - 1):
                     text += self.col_separator
 
                 # If the separators should be colored, do them now
@@ -162,9 +163,12 @@ class Table(object):
             # Finished with the first pass at the row, so add a newline
             self.prompt.write('', new_line=True)
 
-    def render_row_divider(self, row_num):
+    def render_row_divider(self, table_width, row_num):
         """
         Renders a divider after the given row.
+
+        :param table_width: actual width the table will be
+        :type  table_width: int
 
         :param row_num: indicates the last row that was rendered
         :type  row_num: int
@@ -173,13 +177,15 @@ class Table(object):
 
     # -- calculations ---------------------------------------------------------
 
-    def calculate_widths(self, table_max_width, col_widths):
+    def calculate_widths(self):
         """
         Calculates the table width and width of each column.
         """
 
         # First step is an expected table width
-        table_width = table_max_width or self.prompt.terminal_size()[0]
+        table_width = self.table_width or self.prompt.terminal_size()[0]
+
+        col_widths = self.col_widths
 
         # If not specified, evenly divide across the table width and throw
         # out any extra space
@@ -198,7 +204,7 @@ class Table(object):
 
         return table_width, col_widths
 
-    def parse_cells(self, data):
+    def parse_cells(self, data, col_widths):
         """
         For each of the given cells, breaks apart the contents into what
         should be in each cell of the table based on the table's configuration
@@ -214,7 +220,7 @@ class Table(object):
                 cell = CellData()
                 cells[row_num].append(cell) # each row is a list of cells
 
-                col_width = self.col_widths[col_num]
+                col_width = col_widths[col_num]
                 text = row[col_num]
 
                 # Apply the wrap policy to transform the text
