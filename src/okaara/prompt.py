@@ -722,7 +722,7 @@ class Prompt:
             elif selection.isdigit() and int(selection) < (len(menu_values) + 1):
                 return int(selection) - 1 # to remove the +1 for display purposes
 
-    def prompt_password(self, question, verify_question=None, unmatch_msg=None):
+    def prompt_password(self, question, verify_question=None, unmatch_msg=None, interruptable=True):
         """
         Prompts the user for a password. If a verify question is specified, the
         user will be prompted to match the previously entered password (suitable
@@ -731,19 +731,27 @@ class Prompt:
 
         The user entered text will not be echoed to the screen.
 
-        Due to the way getpass works, this method intentionally does not support
-        the "interruptable" keyword.
-
         :return: entered password
         :rtype:  str
         """
         while True:
-            password_1 = getpass.getpass(question, stream=self.output)
+
+            try:
+                password_1 = getpass.getpass(question, stream=self.output)
+            except KeyboardInterrupt:
+                if interruptable:
+                    return ABORT
+                raise
 
             if verify_question is None:
                 return password_1
 
-            password_2 = getpass.getpass(verify_question, stream=self.output)
+            try:
+                password_2 = getpass.getpass(verify_question, stream=self.output)
+            except KeyboardInterrupt:
+                if interruptable:
+                    return ABORT
+                raise
 
             if password_1 != password_2:
                 self.write(unmatch_msg)
