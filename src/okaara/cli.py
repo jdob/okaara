@@ -5,11 +5,15 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
+import gettext
 from optparse import OptionParser, Values
 import os
 import sys
 
 from prompt import Prompt
+
+t = gettext.translation('okaara', fallback=True)
+_ = t.ugettext
 
 # -- exceptions ---------------------------------------------------------------
 
@@ -119,7 +123,7 @@ class Command(object):
 
     # When printing the usage for a command, the description for any options
     # is prefixed with one of these two values depending on its required value
-    REQUIRED_OPTION_PREFIX = '(required) '
+    REQUIRED_OPTION_PREFIX = _('(required) ')
     OPTIONAL_OPTION_PREFIX = ''
 
     def __init__(self, name, description, method, usage_description=None, parser=None):
@@ -416,7 +420,7 @@ class Command(object):
         :param exception: exception that was raised from the validation function
         :type  exception: Exception
         """
-        prompt.write('Validation failed for argument [%s]:' % option.name)
+        prompt.write(_('Validation failed for argument [%s]:') % option.name)
         prompt.write('  %s' % exception.args[0])
 
     def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
@@ -438,10 +442,10 @@ class Command(object):
         :type  step: int
         """
 
-        prompt.write('%sCommand: %s' % (' ' * indent, self.name))
-        prompt.write('%sDescription: %s' % (' ' * indent, self.description))
+        prompt.write(_('%sCommand: %s') % (' ' * indent, self.name))
+        prompt.write(_('%sDescription: %s') % (' ' * indent, self.description))
         if self.usage_description is not None:
-            prompt.write('%sUsage: %s' % (' ' * indent, self.usage_description))
+            prompt.write(_('%sUsage: %s') % (' ' * indent, self.usage_description))
 
         def _assemble_triggers(option):
             all_triggers = [option.name]
@@ -472,7 +476,7 @@ class Command(object):
         # Header
         if len(self.options) > 0 or len(self.option_groups) > 0:
             prompt.write('')
-            prompt.write('Available Arguments:')
+            prompt.write(_('Available Arguments:'))
             prompt.write('')
 
         # Print any command-level options
@@ -497,7 +501,7 @@ class Command(object):
 
         if missing_required:
             prompt.write('')
-            prompt.write('The following options are required but were not specified:')
+            prompt.write(_('The following options are required but were not specified:'))
             for r in missing_required:
                 prompt.write('%s%s' % (' ' * (indent + step), r.name))
 
@@ -674,18 +678,18 @@ class Section(object):
         """
         launch_script = os.path.basename(sys.argv[0])
         if self.name != '':
-            prompt.write('Usage: %s %s [SUB_SECTION, ..] COMMAND' % (launch_script, self.name))
-            prompt.write('Description: %s' % self.description)
+            prompt.write(_('Usage: %s %s [SUB_SECTION, ..] COMMAND') % (launch_script, self.name))
+            prompt.write(_('Description: %s') % self.description)
             prompt.write('')
         else:
-            prompt.write('Usage: %s [SECTION, ..] COMMAND' % launch_script)
+            prompt.write(_('Usage: %s [SECTION, ..] COMMAND') % launch_script)
             prompt.write('')
 
         if len(self.subsections) > 0:
             max_width = reduce(lambda x, y: max(x, len(y)), self.subsections, 0)
             template = '%s' + '%-' + str(max_width) + 's - %s'
 
-            prompt.write('Available Sections:')
+            prompt.write(_('Available Sections:'))
             for subsection in sorted(self.subsections.values(), key=lambda x : x.name):
                 wrapped_description = prompt.wrap(subsection.description, remaining_line_indent=(indent + step + max_width + 3))
                 prompt.write(template % (' ' * (indent + step), subsection.name, wrapped_description), skip_wrap=True)
@@ -697,7 +701,7 @@ class Section(object):
             max_width = reduce(lambda x, y: max(x, len(y)), self.commands, 0)
             template = '%s' + '%-' + str(max_width) + 's - %s'
 
-            prompt.write('Available Commands:')
+            prompt.write(_('Available Commands:'))
             for command in sorted(self.commands.values(), key=lambda x : x.name):
                 wrapped_description = prompt.wrap(command.description, remaining_line_indent=(indent + step + max_width + 3))
                 prompt.write(template % (' ' * (indent + step), command.name, wrapped_description), skip_wrap=True)
@@ -1143,19 +1147,20 @@ class UnknownArgsParser(object):
 
     def usage(self):
         launch_script = os.path.basename(sys.argv[0])
-        self.prompt.write('Usage: %s %s [OPTION, ..]' % (launch_script, self.path))
+        self.prompt.write(_('Usage: %s %s [OPTION, ..]') % (launch_script, self.path))
         self.prompt.render_spacer()
 
-        m  = 'Options will vary based on the type of server-side plugin being used. '
-        m += 'Valid options follow one of the following formats:'
+        m  = _('Options will vary based on the type of server-side plugin '
+               'being used. Valid options follow one of the following '
+               'formats:')
         self.prompt.write(m)
 
-        self.prompt.write('  --<option> <value>')
-        self.prompt.write('  --<flag>')
+        self.prompt.write(_('  --<option> <value>'))
+        self.prompt.write(_('  --<flag>'))
         self.prompt.render_spacer()
 
         if len(self.required_options) > 0:
-            self.prompt.write('The following options are required:')
+            self.prompt.write(_('The following options are required:'))
 
             max_width = reduce(lambda x, y: max(x, len(y[0])), self.required_options, 0)
             template = '  %-' + str(max_width) + 's - %s'
@@ -1203,4 +1208,4 @@ class PassThroughParser(object):
 
     def usage(self):
         launch_script = os.path.basename(sys.argv[0])
-        self.prompt.write('Usage: %s %s [OPTION, ..]' % (launch_script, self.path))
+        self.prompt.write(_('Usage: %s %s [OPTION, ..]') % (launch_script, self.path))
