@@ -41,10 +41,7 @@ rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 # -- check --------------------------------------------------------------------
 
 %check
-export PYTHONPATH=$RPM_BUILD_ROOT/%{python_sitelib}
-pushd test
 nosetests
-popd
 
 # -- clean --------------------------------------------------------------------
 
