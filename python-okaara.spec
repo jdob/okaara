@@ -27,9 +27,7 @@ Python library to facilitate the creation of command-line interfaces.
 # -- build --------------------------------------------------------------------
 
 %build
-pushd src
 %{__python} setup.py build
-popd
 
 # -- install ------------------------------------------------------------------
 
@@ -37,9 +35,7 @@ popd
 rm -rf $RPM_BUILD_ROOT
 
 # Python setup
-pushd src
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
-popd
 rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 
 # -- check --------------------------------------------------------------------

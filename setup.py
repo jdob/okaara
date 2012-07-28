@@ -7,13 +7,15 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(
         name='okaara',
         version='1.0.0',
-        packages=['okaara'],
 
         author='Jay Dobies',
         author_email='jdobies@gmail.com',
+
+        package_dir={'okaara': 'src/okaara'},
+        packages = find_packages('src'),
 )
