@@ -4,3 +4,5 @@ _build
 .coverage
 cover
 .idea
+build
+*.sw?
