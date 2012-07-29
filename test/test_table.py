@@ -53,9 +53,9 @@ class TableTests(unittest.TestCase):
         max_size = 5
 
         try:
-            table.Table(self.prompt, len(col_widths),
-                        col_widths=col_widths, table_width=max_size,
-                        col_separator='')
+            t = table.Table(self.prompt, len(col_widths), col_widths=col_widths, table_width=max_size)
+            tw, cw = t.calculate_widths()
+            t.validate(tw, cw)
             self.fail()
         except table.InvalidTableSettings:
             pass
