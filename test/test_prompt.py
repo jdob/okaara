@@ -155,7 +155,7 @@ class WrapTests(unittest.TestCase):
         expected = 'abc\ndef\nghikl\nmno\npqrs'
         self.assertEqual(expected, wrapped)
 
-# Demo comment
+
 class PromptTest(unittest.TestCase):
 
     def test_prompt_no_empty(self):
