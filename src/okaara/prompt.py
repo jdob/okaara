@@ -8,11 +8,15 @@
 import copy
 import fcntl
 import getpass
+import gettext
 import logging
 import os
 import struct
 import sys
 import termios
+
+t = gettext.translation('okaara', fallback=True)
+_ = t.ugettext
 
 # -- constants ----------------------------------------------------------------
 
@@ -383,7 +387,7 @@ class Prompt:
         elif os.path.exists(f) and (allow_directory or os.path.isfile(f)):
             return f
         else:
-            self.write('Cannot find file, please enter a valid path')
+            self.write(_('Cannot find file, please enter a valid path'))
             self.write('')
             return self.prompt_file(question, allow_directory=allow_directory, allow_empty=allow_empty, interruptable=interruptable)
 
@@ -431,7 +435,7 @@ class Prompt:
             a = self.prompt_number(question, interruptable=interruptable)
 
             if a > high_number or a < low_number:
-                self.write('Please enter a number between %d and %d' % (low_number, high_number))
+                self.write(_('Please enter a number between %d and %d') % (low_number, high_number))
                 continue
                 
             return a
@@ -456,15 +460,15 @@ class Prompt:
             try:
                 i = int(a)
             except ValueError:
-                self.write('Please enter a number')
+                self.write(_('Please enter a number'))
                 continue
 
             if not allow_negatives and i < 0:
-                self.write('Please enter a number greater than zero')
+                self.write(_('Please enter a number greater than zero'))
                 continue
 
             if not allow_zero and i == 0:
-                self.write('Please enter a non-zero value')
+                self.write(_('Please enter a non-zero value'))
                 continue
 
             return i
@@ -495,7 +499,7 @@ class Prompt:
         """
         selected_indices = []
 
-        q = 'Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ' % len(menu_values)
+        q = _('Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ') % len(menu_values)
 
         while True:
             self.write(question)
@@ -516,13 +520,13 @@ class Prompt:
             if selection is ABORT:
                 return ABORT
             elif selection == '?':
-                self.write('  <num> : toggles selection, value values between 1 and %s' % len(menu_values))
-                self.write('  x-y  : toggle the selection of a range of items (example: "2-5" toggles items 2 through 5)')
-                self.write('  a    : select all items')
-                self.write('  n    : select no items')
-                self.write('  c    : confirm the currently selected items')
-                self.write('  b    : abort the item selection')
-                self.write('  l    : clears the screen and redraws the menu')
+                self.write(_('  <num> : toggles selection, value values between 1 and %s') % len(menu_values))
+                self.write(_('  x-y  : toggle the selection of a range of items (example: "2-5" toggles items 2 through 5)'))
+                self.write(_('  a    : select all items'))
+                self.write(_('  n    : select no items'))
+                self.write(_('  c    : confirm the currently selected items'))
+                self.write(_('  b    : abort the item selection'))
+                self.write(_('  l    : clears the screen and redraws the menu'))
                 self.write('')
             elif selection == 'c':
                 return selected_indices
@@ -610,7 +614,7 @@ class Prompt:
 
         total_item_count = reduce(lambda count, key: count + len(section_items[key]), section_items.keys(), 0)
 
-        q = 'Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ' % total_item_count
+        q = _('Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ') % total_item_count
 
         while True:
             self.write(question)
@@ -646,13 +650,13 @@ class Prompt:
             if selection is ABORT:
                 return ABORT
             elif selection == '?':
-                self.write('  <num> : toggles selection, value values between 1 and %s' % total_item_count)
-                self.write('  x-y   : toggle the selection of a range of items (example: "2-5" toggles items 2 through 5)')
-                self.write('  a     : select all items')
-                self.write('  n     : select no items')
-                self.write('  c     : confirm the currently selected items')
-                self.write('  b     : abort the item selection')
-                self.write('  l     : clears the screen and redraws the menu')
+                self.write(_('  <num> : toggles selection, value values between 1 and %s') % total_item_count)
+                self.write(_('  x-y   : toggle the selection of a range of items (example: "2-5" toggles items 2 through 5)'))
+                self.write(_('  a     : select all items'))
+                self.write(_('  n     : select no items'))
+                self.write(_('  c     : confirm the currently selected items'))
+                self.write(_('  b     : abort the item selection'))
+                self.write(_('  l     : clears the screen and redraws the menu'))
                 self.write('')
             elif selection == 'c':
                 return selected_index_map
@@ -712,7 +716,7 @@ class Prompt:
         for index, value in enumerate(menu_values):
             self.write('  %-2d - %s' % (index + 1, value))
 
-        q = 'Enter value (1-%d) or \'b\' to abort: ' % len(menu_values)
+        q = _('Enter value (1-%d) or \'b\' to abort: ') % len(menu_values)
 
         while True:
             selection = self.prompt(q, interruptable=interruptable)

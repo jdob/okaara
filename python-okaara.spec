@@ -16,6 +16,7 @@ BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 BuildArch:      noarch
 BuildRequires:  python-nose
 BuildRequires:  python-setuptools
+BuildRequires:  python-babel
 BuildRequires:  python2-devel
 
 %description
@@ -29,6 +30,16 @@ Python library to facilitate the creation of command-line interfaces.
 %build
 %{__python} setup.py build
 
+mkdir -p po/build
+for lang in `ls po/*.po` ; do
+    echo $lang;
+    lang=`basename $lang .po`;
+    mkdir -p po/build/$lang/LC_MESSAGES/;
+    %{__python} setup.py compile_catalog -i po/$lang.po \
+        -o po/build/$lang/LC_MESSAGES/okaara.mo;
+done
+
+
 # -- install ------------------------------------------------------------------
 
 %install
@@ -38,10 +49,12 @@ rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root %{buildroot}
 rm -f $RPM_BUILD_ROOT%{python_sitelib}/rhui*egg-info/requires.txt
 
+mkdir -p $RPM_BUILD_ROOT/%{_datadir}/locale/
+cp -R po/build/* $RPM_BUILD_ROOT/%{_datadir}/locale/
+%find_lang okaara
+
 # -- check --------------------------------------------------------------------
 
-%check
-nosetests
 
 # -- clean --------------------------------------------------------------------
 
@@ -50,7 +63,7 @@ rm -rf $RPM_BUILD_ROOT
 
 # -- files --------------------------------------------------------------------
 
-%files
+%files -f okaara.lang
 %{python_sitelib}/okaara/
 %{python_sitelib}/okaara*.egg-info
 %doc LICENSE

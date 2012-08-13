@@ -6,11 +6,15 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 
+import gettext
 import logging
 import os
 import sys
 
 from okaara.prompt import Prompt
+
+t = gettext.translation('okaara', fallback=True)
+_ = t.ugettext
 
 
 LOG = logging.getLogger(__name__)
@@ -83,11 +87,11 @@ class Shell:
 
         self.shell_menu_items = {}
         self.ordered_menu_items = [] # kinda ghetto, need to replace with ordered dict for menu_items
-        self.add_menu_item(MenuItem(home_triggers, 'move to the home screen', self.home))
-        self.add_menu_item(MenuItem(previous_triggers, 'move to the previous screen', self.previous))
-        self.add_menu_item(MenuItem(help_triggers, 'display help', self.render_menu))
-        self.add_menu_item(MenuItem(clear_triggers, 'clears the screen', self.clear_screen))
-        self.add_menu_item(MenuItem(quit_triggers, 'exit', self.stop))
+        self.add_menu_item(MenuItem(home_triggers, _('move to the home screen'), self.home))
+        self.add_menu_item(MenuItem(previous_triggers, _('move to the previous screen'), self.previous))
+        self.add_menu_item(MenuItem(help_triggers, _('display help'), self.render_menu))
+        self.add_menu_item(MenuItem(clear_triggers, _('clears the screen'), self.clear_screen))
+        self.add_menu_item(MenuItem(quit_triggers, _('exit'), self.stop))
 
     def add_screen(self, screen, is_home=False):
         """
@@ -172,7 +176,7 @@ class Shell:
             if item is None:
                 item = self.current_screen.item(trigger)
                 if item is None:
-                    self.prompt.write('Invalid menu item; type "?" for a list of available commands')
+                    self.prompt.write(_('Invalid menu item; type "?" for a list of available commands'))
                     continue
 
             # Call the function for the menu item if one was found
@@ -200,8 +204,8 @@ class Shell:
         except:
             LOG.exception('Unexpected error caught at the shell level')
             self.prompt.write('')
-            self.prompt.write('An unexpected error has occurred during the last operation.')
-            self.prompt.write('More information can be found in the log.')
+            self.prompt.write(_('An unexpected error has occurred during the last operation.'))
+            self.prompt.write(_('More information can be found in the log.'))
             self.prompt.write('')
             self.safe_start(show_menu=False, clear=False)
 
