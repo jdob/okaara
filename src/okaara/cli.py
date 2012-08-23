@@ -421,7 +421,12 @@ class Command(object):
         :type  exception: Exception
         """
         prompt.write(_('Validation failed for argument [%s]:') % option.name)
-        prompt.write('  %s' % exception.args[0])
+        try:
+            prompt.write('  %s' % exception.args[0])
+        # Python 2.4 and older does not have an 'args' attribute on Exception.
+        # There is also no guarantee that 'args' (an iterable) will have a member.
+        except (AttributeError, IndexError):
+            pass
 
     def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
         """
