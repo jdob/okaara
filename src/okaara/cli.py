@@ -805,6 +805,12 @@ class Cli(object):
         self.add_section(subsection)
         return subsection
 
+    def create_subsection(self, name, description):
+        """
+        Syntactic sugar method that functions identical to create_section.
+        """
+        return self.create_section(name, description)
+
     def create_command(self, name, description, method, usage_description=None, parser=None):
         """
         Creates a new command in this section. The given name must be
@@ -853,6 +859,12 @@ class Cli(object):
         """
         return self.root_section.find_subsection(name)
 
+    def find_subsection(self, name):
+        """
+        Syntactic sugar method that functions identical to find_section.
+        """
+        return self.find_section(name)
+
     def find_command(self, name):
         """
         Returns the command under this section with the given name.
@@ -877,6 +889,12 @@ class Cli(object):
         :rtype:  Section
         """
         return self.root_section.remove_subsection(name)
+
+    def remove_subsection(self, name):
+        """
+        Syntactic sugar method that functions identical to remove_section.
+        """
+        return self.remove_section(name)
 
     def remove_command(self, name):
         """
