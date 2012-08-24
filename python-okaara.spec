@@ -39,7 +39,6 @@ for lang in `ls po/*.po` ; do
         -o po/build/$lang/LC_MESSAGES/okaara.mo;
 done
 
-
 # -- install ------------------------------------------------------------------
 
 %install
@@ -55,6 +54,8 @@ cp -R po/build/* $RPM_BUILD_ROOT/%{_datadir}/locale/
 
 # -- check --------------------------------------------------------------------
 
+%check
+nosetests
 
 # -- clean --------------------------------------------------------------------
 
