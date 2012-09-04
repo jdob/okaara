@@ -89,12 +89,7 @@ class Option(object):
         :return: keyword to look up in the method handling the command
         :rtype:  str
         """
-        # Handle single character v. multiple character names, e.g.
-        # -v versus --verbose
-        prefix_len = 1 # always at least 1 -
-        if self.name[1] == '-': # always at least 2 chars; this is safe
-            prefix_len = 2
-        return self.name[prefix_len:]
+        return self.name.lstrip('-')
 
 class Flag(Option):
     """
@@ -190,15 +185,7 @@ class Command(object):
                 kwarg_dict[o.name] = False
 
         # Clean up option names
-        clean_kwargs = {}
-        for key in kwarg_dict:
-            if key.startswith('--'):
-                clean_key = key[2:]
-            elif key.startswith('-'):
-                clean_key = key[1:]
-            else:
-                clean_key = key
-            clean_kwargs[clean_key] = kwarg_dict[key]
+        clean_kwargs = dict([(k.lstrip('-'), v) for k, v in kwarg_dict.items()])
 
         return self.method(*arg_list, **clean_kwargs)
 
