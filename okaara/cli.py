@@ -684,13 +684,12 @@ class Section(object):
         :type  step: int
         """
         launch_script = os.path.basename(sys.argv[0])
-        if self.name != '':
-            prompt.write(_('Usage: %s %s [SUB_SECTION, ..] COMMAND') % (launch_script, self.name))
+        prompt.write(_('Usage: %s [SUB_SECTION, ..] COMMAND') % launch_script)
+
+        if self.description:
             prompt.write(_('Description: %s') % self.description)
-            prompt.write('')
-        else:
-            prompt.write(_('Usage: %s [SECTION, ..] COMMAND') % launch_script)
-            prompt.write('')
+
+        prompt.write('')
 
         if len(self.subsections) > 0:
             max_width = reduce(lambda x, y: max(x, len(y)), self.subsections, 0)
@@ -1192,6 +1191,8 @@ class UnknownArgsParser(object):
         self.prompt.write(_('Usage: %s %s [OPTION, ..]') % (launch_script, self.path))
         self.prompt.render_spacer()
 
+        # This was pulled upstream from its creation in Pulp. This message is
+        # still very Pulp-y and I need to refactor to make this configurable.
         m  = _('Options will vary based on the type of server-side plugin '
                'being used. Valid options follow one of the following '
                'formats:')
