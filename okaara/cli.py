@@ -288,7 +288,7 @@ class Command(object):
         :type  parse_func: callable
 
         :return: instance representing the option
-        :rtype:  PulpCliOption
+        :rtype:  Option
         """
         option = Option(name, description, required=required, allow_multiple=allow_multiple, aliases=aliases,
                         default=default, validate_func=validate_func, parse_func=parse_func)
@@ -326,7 +326,7 @@ class Command(object):
         :type  aliases: list
 
         :return: instance representing the flag
-        :rtype:  PulpFliFlag
+        :rtype:  Flag
         """
         flag = Flag(name, description, aliases=aliases)
         self.add_option(flag)
@@ -583,7 +583,7 @@ class Section(object):
         :type  parser: OptionParser
 
         :return: instance representing the newly added command
-        :rtype:  PulpCliCommand
+        :rtype:  Command
         """
         command = Command(name, description, method, usage_description=usage_description, parser=parser)
         self.add_command(command)
@@ -606,7 +606,7 @@ class Section(object):
         :type  description: str
 
         :return: instance representing the newly added section
-        :rtype:  PulpCliSection
+        :rtype:  Section
         """
         subsection = Section(name, description)
         self.add_subsection(subsection)
@@ -786,7 +786,7 @@ class Cli(object):
         :type  description: str
 
         :return: instance representing the newly added section
-        :rtype:  PulpCliSection
+        :rtype:  Section
         """
         subsection = Section(name, description)
         self.add_section(subsection)
@@ -795,6 +795,8 @@ class Cli(object):
     def create_subsection(self, name, description):
         """
         Syntactic sugar method that functions identical to create_section.
+
+        :rtype: Section
         """
         return self.create_section(name, description)
 
@@ -828,7 +830,7 @@ class Cli(object):
         :type  parser: OptionParser
 
         :return: instance representing the newly added command
-        :rtype:  PulpCliCommand
+        :rtype:  Command
         """
         command = Command(name, description, method, usage_description=usage_description, parser=parser)
         self.add_command(command)
@@ -1001,8 +1003,25 @@ class Cli(object):
     def _find_closest_match(self, base_section, args):
         """
         Searches the CLI structure for the command that matches the path in the
-        given arguments. If no command is found, a tuple of None references
+        given arguments. If no command is found, the closest matching section
         is returned.
+
+        For example, given the command: foo bar baz
+        - If baz is a command in the correct location, the baz Command instance
+          is returned
+        - If baz is not a valid command but foo->bar is a valid section
+          hierarchy, the bar Section instance is returned
+        - If bar is not a valid section but foo is, the foo Section instance
+          is returned
+
+        Also returned are the remaining arguments that were not parsed.
+        For example: foo bar baz --k v
+        - If baz is a valid command, the second entry in the returned tuple will
+          be a list of ['--k', 'v']
+        - If baz is not a valid command but bar is a valid section, the returned
+          list of args will be ['baz', '--k', 'v']
+        - If bar is not a valid section, the args returned are
+          ['bar', 'baz', '--k', 'v']
 
         :param base_section: root section from which to begin the search
         :type  base_section: Section
@@ -1027,22 +1046,20 @@ class Cli(object):
         if command is not None:
             return command, args[1:]
 
-        # If we're not at a command yet, recurse into the next level of subsections
-        found_in_subsection = None
-        sub_args = None
-
         # Find the subsection
         subsection = base_section.find_subsection(find_me)
         if subsection is not None:
 
             # Don't recurse if we're at a section and the next argument is an option
-            if len(args) > 1 and args[1].startswith('--'):
+            if len(args) > 1 and args[1].startswith('-'):
                 return subsection, args[1:]
 
             found_in_subsection, sub_args = self._find_closest_match(subsection, args[1:])
+            return found_in_subsection, sub_args
 
-
-        return found_in_subsection, sub_args
+        # If we got this far, we didn't find a matching command or subsection,
+        # so return where we are as the closest match
+        return base_section, args # even include the bad one in the args
 
 # -- parsers ------------------------------------------------------------------
 
@@ -1064,7 +1081,7 @@ class UnknownArgsParser(object):
     def __init__(self, prompt, path, required_options=None, exit_on_abort=True):
         """
         @param prompt: prompt instance to write the usage to
-        @type  prompt: PulpPrompt
+        @type  prompt: Prompt
 
         @param path: section/command path to reach the command currently executing
         @type  path: str
@@ -1220,7 +1237,7 @@ class PassThroughParser(object):
     def __init__(self, prompt, path):
         """
         @param prompt: prompt instance to write the usage to
-        @type  prompt: PulpPrompt
+        @type  prompt: Prompt
 
         @param path: section/command path to reach the command currently executing
         @type  path: str
