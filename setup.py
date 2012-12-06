@@ -19,8 +19,7 @@ setup(
         author='Jay Dobies',
         author_email='jdobies@gmail.com',
 
-        package_dir={'': 'src'},
-        packages = find_packages('src'),
+        packages = find_packages(),
 
         test_suite = 'nose.collector',
 
