@@ -31,8 +31,8 @@ class CommandUsage(Exception):
     lack of required parameters, all required parameters that were missing can
     be specified.
 
-    :param missing_options: optional list of options that are required but missing
-    :type  missing_options: list of L{Option}
+    :param missing_options: optional list of missing required options
+    :type  missing_options: list of Option
     """
     def __init__(self, missing_options=None):
         Exception.__init__(self)
@@ -176,12 +176,11 @@ class Command(object):
             return os.EX_DATAERR
 
         # Make sure all of the required arguments have been specified
-
         missing_required = [o for o in self.all_options() \
                             if o.required and (not kwarg_dict.has_key(o.name) or
                                                kwarg_dict[o.name] is None)]
         if len(missing_required) > 0:
-            raise CommandUsage(missing_required)
+            raise CommandUsage(missing_options=missing_required)
 
         # Flag entries that are not specified are parsed as None, but I'd rather
         # them explicitly be set to false. Iterate through each flag explicitly
@@ -1109,11 +1108,9 @@ class UnknownArgsParser(object):
 
     def parse_args(self, args):
         """
-        Parses arguments to add/update importer/distributor. Since the possible
-        arguments are contingent on the type of plugin and thus not statically
-        defined, we can't simply use optparse to gather them. This method will
-        parse through the argument list and attempt to resolve the arguments into
-        key/value pairs.
+        Parses arguments where the list of possible arguments isn't known ahead
+        of time. This method will parse through the argument list and attempt to
+        resolve the arguments into key/value pairs.
 
         The keys will be the name of the argument with any leading hyphens removed.
         The value will be one of three possibilties:
@@ -1196,18 +1193,14 @@ class UnknownArgsParser(object):
     def usage(self):
         launch_script = os.path.basename(sys.argv[0])
         self.prompt.write(_('Usage: %s %s [OPTION, ..]') % (launch_script, self.path))
-        self.prompt.render_spacer()
+        self.prompt.write('')
 
-        # This was pulled upstream from its creation in Pulp. This message is
-        # still very Pulp-y and I need to refactor to make this configurable.
-        m  = _('Options will vary based on the type of server-side plugin '
-               'being used. Valid options follow one of the following '
-               'formats:')
+        m  = _('Valid options follow one of the following formats:')
         self.prompt.write(m)
 
         self.prompt.write(_('  --<option> <value>'))
         self.prompt.write(_('  --<flag>'))
-        self.prompt.render_spacer()
+        self.prompt.write('')
 
         if len(self.required_options) > 0:
             self.prompt.write(_('The following options are required:'))
