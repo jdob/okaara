@@ -6,7 +6,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 import gettext
-from optparse import OptionParser, Values
+from optparse import OptionParser, Values, BadOptionError
 import os
 import sys
 
@@ -33,10 +33,15 @@ class CommandUsage(Exception):
 
     :param missing_options: optional list of missing required options
     :type  missing_options: list of Option
+
+    :param unexpected_options: list of option names that are not defined on the
+                               command but were specified
+    :type  unexpected_options: list of str
     """
-    def __init__(self, missing_options=None):
+    def __init__(self, missing_options=None, unexpected_options=None):
         Exception.__init__(self)
         self.missing_options = missing_options
+        self.unexpected_options = unexpected_options
 
 
 class OptionValidationFailed(Exception):
@@ -61,6 +66,31 @@ class NoCatchErrorParser(OptionParser):
         # The CLI will take care of formatting the options for a --help call,
         # so do nothing here.
         pass
+
+    def parse_args(self, args=None, values=None):
+        """
+        Copied directly from optparse with the change that an exception on
+        _process_args isn't passed to error but rather converted into a
+        CommandUsage. Bad optparse, passing a string version of the exception
+        to error instead of the programmatically accessible data and letting
+        error() do with it as it wishes.
+        """
+        rargs = self._get_args(args)
+        if values is None:
+            values = self.get_default_values()
+
+        self.rargs = rargs
+        self.largs = largs = []
+        self.values = values
+
+        try:
+            self._process_args(largs, rargs, values)
+        except BadOptionError, e:
+            # Raise with the data, not a string version of the exception
+            raise CommandUsage(unexpected_options=[e.opt_str])
+
+        args = largs + rargs
+        return self.check_values(values, args)
 
 
 class Option(object):
@@ -435,7 +465,8 @@ class Command(object):
         except (AttributeError, IndexError):
             pass
 
-    def print_command_usage(self, prompt, missing_required=None, indent=0, step=2):
+    def print_command_usage(self, prompt, missing_required=None, unexpected=None,
+                            indent=0, step=2):
         """
         Prints the details of a command, including all options that can be
         specified to it.
@@ -446,6 +477,10 @@ class Command(object):
         :param missing_required: list of required options that were not
                                  specified on an invocation of the CLI
         :type  missing_required: list of Option
+
+        :param unexpected: list of specified option names that do not exist
+                           on the command
+        :type  unexpected: list of str
 
         :param indent: number of spaces to indent the command
         :type  indent: int
@@ -512,10 +547,14 @@ class Command(object):
                 prompt.write('')
 
         if missing_required:
-            prompt.write('')
             prompt.write(_('The following options are required but were not specified:'))
             for r in missing_required:
                 prompt.write('%s%s' % (' ' * (indent + step), r.name))
+
+        if unexpected:
+            prompt.write(_('The following options were specified but do not exist on the command:'))
+            for u in unexpected:
+                prompt.write('%s%s' % (' ' * (indent + step), u))
 
 
 class Section(object):
@@ -932,7 +971,9 @@ class Cli(object):
 
                 return exit_code
             except CommandUsage, e:
-                command_or_section.print_command_usage(self.prompt, missing_required=e.missing_options)
+                command_or_section.print_command_usage(
+                    self.prompt, missing_required=e.missing_options,
+                    unexpected=e.unexpected_options)
                 return os.EX_USAGE
 
     def print_cli_map(self, indent=-2, step=2, show_options=False, section_color=None, command_color=None):
