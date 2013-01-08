@@ -24,6 +24,7 @@ class InvalidStructure(Exception):
     """
     pass
 
+
 class CommandUsage(Exception):
     """
     Indicates the command parameters were incorrect. If the usage error was the
@@ -36,6 +37,7 @@ class CommandUsage(Exception):
     def __init__(self, missing_options=None):
         Exception.__init__(self)
         self.missing_options = missing_options
+
 
 class OptionValidationFailed(Exception):
     """
@@ -59,6 +61,7 @@ class NoCatchErrorParser(OptionParser):
         # The CLI will take care of formatting the options for a --help call,
         # so do nothing here.
         pass
+
 
 class Option(object):
     """
@@ -91,6 +94,7 @@ class Option(object):
         """
         return self.name.lstrip('-')
 
+
 class Flag(Option):
     """
     Specific form of an option that does not take a value; it is meant to be
@@ -98,6 +102,7 @@ class Flag(Option):
     """
     def __init__(self, name, description, aliases=None):
         Option.__init__(self, name, description, required=False, allow_multiple=False, aliases=aliases)
+
 
 class OptionGroup(object):
     """
@@ -123,6 +128,7 @@ class OptionGroup(object):
         :type  option: Option
         """
         self.options.append(option)
+
 
 class Command(object):
     """
@@ -730,6 +736,7 @@ class Section(object):
         if self.commands.has_key(name):
             raise InvalidStructure()
 
+
 class Cli(object):
     """
     Representation of the CLI being created. Coders should create an instance of
@@ -1060,7 +1067,7 @@ class Cli(object):
         # so return where we are as the closest match
         return base_section, args # even include the bad one in the args
 
-# -- parsers ------------------------------------------------------------------
+# -- arg parsers --------------------------------------------------------------
 
 class UnknownArgsParser(object):
     """
@@ -1226,6 +1233,7 @@ class UnknownArgsParser(object):
             sys.exit(os.EX_USAGE)
         else:
             raise exception_class('Parsing aborted')
+
 
 class PassThroughParser(object):
     """
