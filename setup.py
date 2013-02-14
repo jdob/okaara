@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 
 setup(
         name='okaara',
-        version='1.0.28',
+        version='1.0.29',
         description='Python command line utilities',
         url='http://jdob.fedorapeople.org/okaara/',
         license='GPLv2',
