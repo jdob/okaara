@@ -9,8 +9,9 @@
 
 import sys
 
-from okaara.prompt import Prompt, COLOR_LIGHT_CYAN, COLOR_LIGHT_BLUE
-from okaara.cli import Cli, Section, Command, Option, Flag
+from okaara.prompt import COLOR_LIGHT_CYAN, COLOR_LIGHT_BLUE
+from okaara.cli import Cli, Section, Command
+
 
 class SampleSectionOne(Section):
     def __init__(self, prompt):
@@ -18,11 +19,17 @@ class SampleSectionOne(Section):
         self.prompt = prompt
 
         # Optional Argument Demo
-        opt_arg_command = Command('opt-args', 'configured with multiple arguments, many optional', self.optional_args,
-                                  usage_description='Unspecified required arguments are listed at the bottom. The full ' \
-                                  'listing of specified arguments is displayed when successfully run.')
-        opt_arg_command.create_option('--required-1', 'required argument before this command will actually run', required=True)
-        opt_arg_command.create_option('--optional-1', 'optional argument, value will be displayed when specified', required=False)
+        usage = 'Unspecified required arguments are listed at the bottom. The full ' \
+                'listing of specified arguments is displayed when successfully run.'
+        opt_arg_command = Command('opt-args', 'configured with multiple arguments, many optional',
+                                  self.optional_args,
+                                  usage_description=usage)
+        opt_arg_command.create_option('--required-1',
+                                      'required argument before this command will actually run',
+                                      required=True)
+        opt_arg_command.create_option('--optional-1',
+                                      'optional argument, value will be displayed when specified',
+                                      required=False)
         opt_arg_command.create_option('--optional-2', 'another optional argument', required=False)
         self.add_command(opt_arg_command)
 
@@ -30,6 +37,7 @@ class SampleSectionOne(Section):
         self.prompt.write('Supplied Arguments:')
         for k, v in kwargs.items():
             self.prompt.write('Key: %-10s   Value: %s' % (k, v))
+
 
 class UsersSection(Section):
     def __init__(self, prompt):
@@ -48,6 +56,7 @@ class UsersSection(Section):
         self.prompt.write('Username: %s' % kwargs['username'])
         self.prompt.write('Password: %s' % kwargs['password'])
         self.prompt.write('Group:    %s' % kwargs['group'])
+
 
 class SampleCli(Cli):
     def __init__(self):
