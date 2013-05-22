@@ -10,7 +10,7 @@ from optparse import OptionParser, Values, BadOptionError
 import os
 import sys
 
-from prompt import Prompt
+from okaara.prompt import Prompt
 
 t = gettext.translation('okaara', fallback=True)
 _ = t.ugettext
@@ -62,7 +62,7 @@ class NoCatchErrorParser(OptionParser):
     def exit(self, status=0, msg=None):
         raise CommandUsage()
 
-    def print_help(self, file=None):
+    def print_help(self, out_file=None):
         # The CLI will take care of formatting the options for a --help call,
         # so do nothing here.
         pass

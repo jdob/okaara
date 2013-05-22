@@ -13,7 +13,9 @@
 
 import unittest
 
-from okaara import prompt, table
+from okaara import prompt
+from prompt import table
+
 
 class TableTests(unittest.TestCase):
 

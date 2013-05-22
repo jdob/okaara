@@ -9,8 +9,8 @@
 
 import sys
 
-from okaara.prompt import COLOR_LIGHT_CYAN, COLOR_LIGHT_BLUE
-from okaara.cli import Cli, Section, Command
+from okaara.prompt.colors import COLOR_LIGHT_CYAN, COLOR_LIGHT_BLUE
+from okaara.cli.cli import Cli, Section, Command
 
 
 class SampleSectionOne(Section):

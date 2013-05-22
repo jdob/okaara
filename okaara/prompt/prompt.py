@@ -15,6 +15,8 @@ import struct
 import sys
 import termios
 
+from okaara.prompt.colors import COLOR_WHITE
+
 t = gettext.translation('okaara', fallback=True)
 _ = t.ugettext
 
@@ -28,33 +30,6 @@ ABORT = object()
 # Indicates the automatic wrap should use the current width of the screen,
 # calculated at the time of rendering
 WIDTH_TERMINAL = object()
-
-COLOR_WHITE = '\033[0m'
-COLOR_BRIGHT_WHITE = '\033[1m'
-
-COLOR_GRAY = '\033[30m'
-COLOR_RED = '\033[31m'
-COLOR_GREEN = '\033[32m'
-COLOR_YELLOW = '\033[33m'
-COLOR_BLUE = '\033[34m'
-COLOR_PURPLE = '\033[35m'
-COLOR_CYAN = '\033[36m'
-
-COLOR_LIGHT_GRAY = '\033[90m'
-COLOR_LIGHT_RED = '\033[91m'
-COLOR_LIGHT_GREEN = '\033[92m'
-COLOR_LIGHT_YELLOW = '\033[93m'
-COLOR_LIGHT_BLUE = '\033[94m'
-COLOR_LIGHT_PURPLE = '\033[95m'
-COLOR_LIGHT_CYAN = '\033[96m'
-
-COLOR_BG_GRAY = '\033[40m'
-COLOR_BG_RED = '\033[41m'
-COLOR_BG_GREEN = '\033[42m'
-COLOR_BG_YELLOW = '\033[43m'
-COLOR_BG_BLUE = '\033[44m'
-COLOR_BG_PURPLE = '\033[45m'
-COLOR_BG_CYAN = '\033[46m'
 
 POSITION_SAVE = '\033[s'
 POSITION_RESET = '\033[u'
@@ -258,9 +233,9 @@ class Prompt:
             wrap_width = self.terminal_size()[0]
 
         # Actual splitting algorithm
-        def _rightmost_space_index(str):
-            for i in range(len(str) - 1, -1, -1):
-                if str[i] == ' ' : return i
+        def _rightmost_space_index(s):
+            for i in range(len(s) - 1, -1, -1):
+                if s[i] == ' ' : return i
             return None
 
         lines = [] # running track of split apart lines; assemble at the end
@@ -831,13 +806,13 @@ class Prompt:
 
     # -- private --------------------------------------------------------------
 
-    def _is_range(self, input, selectable_item_count):
+    def _is_range(self, value, selectable_item_count):
         """
         :return: True if the input represents a range in a multiselect menu,
                  False otherwise
         :rtype:  bool
         """
-        parsed = input.split('-')
+        parsed = value.split('-')
         if len(parsed) != 2:
             return False
 
@@ -848,7 +823,7 @@ class Prompt:
                upper.isdigit() and int(upper) <= selectable_item_count and \
                int(lower) < int(upper)
 
-    def _range(self, input):
+    def _range(self, value):
         """
         If an input is determined to be a range by _is_range, this call will
         return the lower and upper indices of the range (the entered values
@@ -857,7 +832,7 @@ class Prompt:
         :return: tuple of (lower boundary, upper boundary)
         :rtype: (int, int)
         """
-        parsed = input.split('-')
+        parsed = value.split('-')
         return int(parsed[0].strip()) - 1, int(parsed[1].strip()) - 1
 
     def _record_tag(self, io, tag):
@@ -880,6 +855,7 @@ class Prompt:
 
         self.tags.append(t)
 
+
 class Recorder:
     """
     Suitable for passing to the Prompt constructor as the output, an instance
@@ -891,6 +867,7 @@ class Recorder:
 
     def write(self, line):
         self.lines.append(line)
+
 
 class Script:
     """

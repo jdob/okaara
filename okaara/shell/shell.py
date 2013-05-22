@@ -11,13 +11,14 @@ import logging
 import os
 import sys
 
-from okaara.prompt import Prompt
+from okaara.prompt.prompt import Prompt
 
 t = gettext.translation('okaara', fallback=True)
 _ = t.ugettext
 
 
 LOG = logging.getLogger(__name__)
+
 
 class Exit(Exception):
     """
@@ -155,17 +156,17 @@ class Shell:
 
             # Read the next input from the user
             try:
-                input = self.prompt.prompt(self._prompt_prefix())
+                user_input = self.prompt.prompt(self._prompt_prefix())
             except (EOFError, KeyboardInterrupt):
                 self.prompt.write('\n')
                 return
 
             # Make sure the user entered something
-            if input is None or input.strip() == '':
+            if user_input is None or user_input.strip() == '':
                 continue
 
-            trigger = input.split()[0]
-            command_args = input.split()[1:]
+            trigger = user_input.split()[0]
+            command_args = user_input.split()[1:]
 
             # Search the shell for the menu item first
             item = None
@@ -328,16 +329,16 @@ class Screen:
     screens in a graphical UI.
     """
 
-    def __init__(self, id):
+    def __init__(self, screen_id):
         """
-        :param id: uniquely identifies this screen instance in a shell; may not
-                   be None
-        :type  id: string
+        :param screen_id: uniquely identifies this screen instance in a shell; may not
+                          be None
+        :type  screen_id: string
         """
-        if id is None:
+        if screen_id is None:
             raise ValueError('id may not be None')
 
-        self.id = id
+        self.id = screen_id
         self.menu_items = {}
         self.ordered_menu_items = [] # kinda ghetto, need to replace with ordered dict for menu_items
 
@@ -445,7 +446,9 @@ class MenuItem:
         self.kwargs = kwargs
 
     def __str__(self):
-        return 'Triggers: [%s], Description [%s], Function: [%s]' % (', '.join(self.triggers), self.description, self.func.__name__)
+        return 'Triggers: [%s], Description [%s], Function: [%s]' % (', '.join(self.triggers),
+                                                                     self.description,
+                                                                     self.func.__name__)
 
     def __eq__(self, other):
         return self.triggers == other.triggers

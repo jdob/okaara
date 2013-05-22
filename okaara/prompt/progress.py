@@ -16,7 +16,7 @@ import math
 import threading
 import time
 
-import okaara.prompt
+from okaara.prompt.prompt import MOVE_UP, CLEAR_REMAINDER
 
 
 class ProgressBar:
@@ -173,8 +173,8 @@ class ProgressBar:
         This must be called before attemping to write anything new to the prompt.
         """
         if self.previous_lines_written > 0:
-            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
-            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
+            self.prompt.move(MOVE_UP % self.previous_lines_written)
+            self.prompt.clear(CLEAR_REMAINDER)
 
 
 class Spinner:
@@ -284,8 +284,8 @@ class Spinner:
         This must be called before attemping to write anything new to the prompt.
         """
         if self.previous_lines_written > 0:
-            self.prompt.move(okaara.prompt.MOVE_UP % self.previous_lines_written)
-            self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
+            self.prompt.move(MOVE_UP % self.previous_lines_written)
+            self.prompt.clear(CLEAR_REMAINDER)
 
 
 class ThreadedSpinner(Spinner):

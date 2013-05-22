@@ -12,7 +12,8 @@
 
 import unittest
 
-from okaara import prompt, cli
+from okaara.prompt.prompt import Prompt
+from okaara.cli.cli import Cli
 
 
 class FindClosestMatchTests(unittest.TestCase):
@@ -23,8 +24,8 @@ class FindClosestMatchTests(unittest.TestCase):
         def noop():
             pass
 
-        self.prompt = prompt.Prompt()
-        self.cli = cli.Cli(prompt=self.prompt)
+        self.prompt = Prompt()
+        self.cli = Cli(prompt=self.prompt)
 
         # Populate a CLI structure to test against
         self.marvel = self.cli.create_subsection('marvel', 'Marvel characters')

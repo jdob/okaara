@@ -8,7 +8,7 @@
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
 
-from okaara.shell import Shell, Screen, MenuItem
+from okaara.shell.shell import Shell, Screen, MenuItem
 
 
 class SampleShell(Shell):

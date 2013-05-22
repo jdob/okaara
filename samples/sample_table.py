@@ -11,8 +11,9 @@
 # have received a copy of GPLv2 along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-import okaara.prompt
-from okaara.table import Table, WRAP_POLICY_WRAP, ALIGN_RIGHT, ALIGN_LEFT, ALIGN_CENTER
+from okaara.prompt.colors import COLOR_CYAN, COLOR_LIGHT_PURPLE, COLOR_LIGHT_BLUE, COLOR_BG_BLUE
+from okaara.prompt.prompt import Prompt, ABORT
+from okaara.prompt.table import Table, WRAP_POLICY_WRAP, ALIGN_RIGHT, ALIGN_LEFT, ALIGN_CENTER
 
 # -----------------------------------------------------------------------------
 
@@ -27,7 +28,7 @@ TEST_HEADERS = ['ID', 'Title', 'Description']
 
 NUM_COLS = len(TEST_HEADERS)
 
-PROMPT = okaara.prompt.Prompt()
+PROMPT = Prompt()
 
 # -----------------------------------------------------------------------------
 
@@ -46,7 +47,7 @@ def main():
     selected = PROMPT.prompt_menu('Select the table to demonstrate:', menu_values=menu_values)
     PROMPT.write('')
 
-    if selected is okaara.prompt.ABORT:
+    if selected is ABORT:
         return
 
     func = mappings[selected][1]
@@ -80,8 +81,8 @@ def colored():
     PROMPT.write('')
 
     table = Table(PROMPT, NUM_COLS, table_width=60, wrap_policy=WRAP_POLICY_WRAP)
-    table.header_color=okaara.prompt.COLOR_BG_BLUE
-    table.row_colors=[okaara.prompt.COLOR_LIGHT_BLUE, okaara.prompt.COLOR_LIGHT_PURPLE, okaara.prompt.COLOR_CYAN]
+    table.header_color=COLOR_BG_BLUE
+    table.row_colors=[COLOR_LIGHT_BLUE, COLOR_LIGHT_PURPLE, COLOR_CYAN]
 
     table.render(TEST_DATA, headers=TEST_HEADERS)
 

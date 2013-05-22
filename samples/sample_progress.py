@@ -9,8 +9,9 @@
 
 import time
 
-from okaara.prompt import Prompt, COLOR_LIGHT_YELLOW, COLOR_LIGHT_GREEN
-from okaara.progress import ProgressBar, Spinner, ThreadedSpinner
+from okaara.prompt.colors import COLOR_LIGHT_YELLOW, COLOR_LIGHT_GREEN
+from okaara.prompt.prompt import Prompt
+from okaara.prompt.progress import ProgressBar, Spinner, ThreadedSpinner
 
 
 def progress_bar_demo():

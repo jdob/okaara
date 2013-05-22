@@ -10,8 +10,8 @@
 
 import unittest
 
-import okaara.prompt
-from okaara.prompt import Prompt, Recorder, Script, ABORT
+import okaara.prompt.colors as colors
+from okaara.prompt.prompt import Prompt, Recorder, Script, ABORT
 
 
 # -- mocks --------------------------------------------------------------------
@@ -47,10 +47,10 @@ class GeneralTests(unittest.TestCase):
 
         # Test
         prompt = Prompt()
-        colored = prompt.color('Hulk', okaara.prompt.COLOR_GREEN)
+        colored = prompt.color('Hulk', colors.COLOR_GREEN)
 
         # Verify
-        expected = okaara.prompt.COLOR_GREEN + 'Hulk' + okaara.prompt.COLOR_WHITE
+        expected = colors.COLOR_GREEN + 'Hulk' + colors.COLOR_WHITE
         self.assertEqual(colored, expected)
 
     def test_write_color(self):
@@ -63,10 +63,10 @@ class GeneralTests(unittest.TestCase):
         prompt = Prompt(output=recorder)
 
         # Test
-        prompt.write('Hulk', color=okaara.prompt.COLOR_RED, new_line=False)
+        prompt.write('Hulk', color=colors.COLOR_RED, new_line=False)
 
         # Verify
-        expected = okaara.prompt.COLOR_RED + 'Hulk' + okaara.prompt.COLOR_WHITE
+        expected = colors.COLOR_RED + 'Hulk' + colors.COLOR_WHITE
         self.assertEqual(recorder.lines[1], expected)
 
     def test_write_with_wrap(self):
