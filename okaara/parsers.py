@@ -57,7 +57,7 @@ def parse_optional_boolean(value):
     return parse_boolean(value)
 
 
-def parse_nonnegative_int(value):
+def parse_non_negative_int(value):
     """
     Returns an int representation of the user entered value, raising an
     exception if it is negative.
@@ -73,7 +73,7 @@ def parse_nonnegative_int(value):
     return i
 
 
-def parse_optional_nonnegative_int(value):
+def parse_optional_non_negative_int(value):
     """
     Returns an int representation of the user entered value. This call does not raise an
     exception in the event the specified value is None.
@@ -86,7 +86,7 @@ def parse_optional_nonnegative_int(value):
     if value is None:
         return value
 
-    return parse_nonnegative_int(value)
+    return parse_non_negative_int(value)
 
 
 def parse_positive_int(value):

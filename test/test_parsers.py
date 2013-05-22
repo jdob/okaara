@@ -66,29 +66,29 @@ class ParsePostiveIntTests(unittest.TestCase):
 
 class ParseNonNegativeIntTests(unittest.TestCase):
     def test_valid(self):
-        ret = parsers.parse_nonnegative_int('31415')
+        ret = parsers.parse_non_negative_int('31415')
         self.assertEqual(ret, 31415)
 
     def test_string(self):
-        self.assertRaises(ValueError, parsers.parse_nonnegative_int, 'foo')
+        self.assertRaises(ValueError, parsers.parse_non_negative_int, 'foo')
 
     def test_zero(self):
-        ret = parsers.parse_nonnegative_int('0')
+        ret = parsers.parse_non_negative_int('0')
         self.assertEqual(ret, 0)
 
     def test_negative(self):
-        self.assertRaises(ValueError, parsers.parse_nonnegative_int, '-314')
+        self.assertRaises(ValueError, parsers.parse_non_negative_int, '-314')
 
     def test_optional(self):
-        ret = parsers.parse_optional_nonnegative_int(None)
+        ret = parsers.parse_optional_non_negative_int(None)
         self.assertEqual(ret, None)
 
     def test_optional_valid(self):
-        ret = parsers.parse_optional_nonnegative_int(0)
+        ret = parsers.parse_optional_non_negative_int(0)
         self.assertEqual(ret, 0)
 
     def test_optional_invalid(self):
-        self.assertRaises(ValueError, parsers.parse_optional_nonnegative_int, 'foo')
+        self.assertRaises(ValueError, parsers.parse_optional_non_negative_int, 'foo')
 
 
 class ParseBooleanTests(unittest.TestCase):
