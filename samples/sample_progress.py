@@ -57,6 +57,9 @@ def progress_bar_demo():
     p.write('Completed wrapped iteration through progress bar')
     p.write('')
 
+
+def spinner_demo():
+    p = Prompt()
     spinner = Spinner(p)
 
     total = 10
@@ -76,7 +79,7 @@ def progress_bar_demo():
     for i in range(0, total):
         finished = i == (total - 1)
 
-        spinner.next(finished=finished)
+        spinner.next(finished=finished, message='Message: %s' % i)
         time.sleep(.25)
 
     p.write('Completed second spinner example')
@@ -85,7 +88,6 @@ def progress_bar_demo():
 
 def threaded_spinner_demo():
     p = Prompt()
-
     s = ThreadedSpinner(p, refresh_seconds=.1)
 
     p.write('Starting threaded spinner, spinner should keep moving while this thread sleeps')
@@ -137,4 +139,5 @@ def threaded_spinner_demo():
 
 if __name__ == '__main__':
     progress_bar_demo()
+    spinner_demo()
     threaded_spinner_demo()
