@@ -1,0 +1,149 @@
+# This software is licensed to you under the GNU General Public
+# License as published by the Free Software Foundation; either version
+# 2 of the License (GPLv2) or (at your option) any later version.
+# There is NO WARRANTY for this software, express or implied,
+# including the implied warranties of MERCHANTABILITY,
+# NON-INFRINGEMENT, or FITNESS FOR A PARTICULAR PURPOSE. You should
+# have received a copy of GPLv2 along with this software; if not, see
+# http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
+
+"""
+Contains methods suitable for passing to the parse_func parameter of the Option and Flag classes.
+"""
+
+import csv as csv_module
+from gettext import gettext as _
+
+
+# When parsing a boolean, the value is converted to lower case and checked to see
+# if it exists in one of these lists. More/different values to represent true and false
+# can be supported by manipulating these variables.
+VALID_TRUE_STRINGS = ['true']
+VALID_FALSE_STRINGS = ['false']
+
+
+def parse_boolean(value):
+    """
+    Returns the boolean representation of the given user input, raising the
+    appropriate exception if the user input cannot be parsed.
+
+    :param value: user entered text extracted by the framework
+    :type  value: str
+    :rtype: bool
+    """
+
+    if value is None:
+        raise ValueError(_('value is required'))
+    if value.strip().lower() in VALID_TRUE_STRINGS:
+        return True
+    if value.strip().lower() in VALID_FALSE_STRINGS:
+        return False
+    else:
+        raise ValueError(_('invalid boolean value'))
+
+
+def parse_optional_boolean(value):
+    """
+    Returns the boolean representation of the given user input. This call does not raise an
+    exception in the event the specified value is None.
+
+    :param value: user entered text extracted by the framework
+    :type  value: str, None
+    :rtype: bool
+    """
+    if value is None:
+        return value
+
+    return parse_boolean(value)
+
+
+def parse_nonnegative_int(value):
+    """
+    Returns an int representation of the user entered value, raising an
+    exception if it is negative.
+
+    :param value: user entered value
+    :type  value: str
+    :rtype: int
+    """
+
+    i = int(value)
+    if i < 0:
+        raise ValueError(_('value must be a non-negative integer'))
+    return i
+
+
+def parse_optional_nonnegative_int(value):
+    """
+    Returns an int representation of the user entered value. This call does not raise an
+    exception in the event the specified value is None.
+
+    :param value: user entered value
+    :type  value: str, None
+    :rtype: int
+    """
+
+    if value is None:
+        return value
+
+    return parse_nonnegative_int(value)
+
+
+def parse_positive_int(value):
+    """
+    Returns an int representation of the user entered value, raising an
+    exception if it is not a positive number.
+
+    :param value: user entered value
+    :type  value: str
+    :rtype: int
+    """
+
+    i = int(value)
+    if i < 1:
+        raise ValueError(_('value must be a positive integer'))
+    return i
+
+
+def parse_optional_positive_int(value):
+    """
+    Returns an int representation of the user entered value. This call does not raise an
+    exception in the event the specified value is None.
+
+    :param value: user entered value
+    :type  value: str, None
+    :rtype: int
+    """
+    if value is None:
+        return value
+
+    return parse_positive_int(value)
+
+
+def parse_csv_string(value):
+    """
+    Parses a comma-separated string of values into a list of separate items.
+
+    :param value: user entered value
+    :type  value: str
+    :rtype: list
+    """
+    if value is None:
+        raise ValueError(_('value is required'))
+
+    return csv_module.reader((value,)).next()
+
+
+def parse_optional_csv_string(value):
+    """
+    Parses a comma-separated string of values into a list of separate items. This call does not
+    raise an exception in the event the specified value is None.
+
+    :param value: user entered value
+    :type  value: str, None
+    :rtype: list
+    """
+    if value is None:
+        return value
+
+    return parse_csv_string(value)
