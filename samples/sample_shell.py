@@ -7,7 +7,6 @@
 # along with this software; if not, see
 # http://www.gnu.org/licenses/old-licenses/gpl-2.0.txt.
 
-
 from okaara.shell import Shell, Screen, MenuItem
 
 
