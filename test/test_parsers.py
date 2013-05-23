@@ -35,6 +35,10 @@ class CSVTests(unittest.TestCase):
         ret = parsers.parse_optional_csv_string(None)
         self.assertEqual(ret, None)
 
+    def test_optional_empty_string(self):
+        ret = parsers.parse_optional_csv_string('')
+        self.assertEqual(ret, None)
+
     def test_optional_value(self):
         ret = parsers.parse_optional_csv_string('a,b')
         self.assertEqual(ret, ['a', 'b'])
@@ -59,6 +63,10 @@ class ParsePostiveIntTests(unittest.TestCase):
         ret = parsers.parse_optional_positive_int(None)
         self.assertEqual(ret, None)
 
+    def test_optional_empty_string(self):
+        ret = parsers.parse_optional_positive_int('')
+        self.assertEqual(ret, None)
+
     def test_optional_valid(self):
         ret = parsers.parse_optional_positive_int('12345')
         self.assertEqual(ret, 12345)
@@ -68,6 +76,7 @@ class ParsePostiveIntTests(unittest.TestCase):
 
 
 class ParseNonNegativeIntTests(unittest.TestCase):
+
     def test_valid(self):
         ret = parsers.parse_non_negative_int('31415')
         self.assertEqual(ret, 31415)
@@ -86,8 +95,12 @@ class ParseNonNegativeIntTests(unittest.TestCase):
         ret = parsers.parse_optional_non_negative_int(None)
         self.assertEqual(ret, None)
 
+    def test_optional_empty_string(self):
+        ret = parsers.parse_optional_non_negative_int('')
+        self.assertEqual(ret, None)
+
     def test_optional_valid(self):
-        ret = parsers.parse_optional_non_negative_int(0)
+        ret = parsers.parse_optional_non_negative_int('0')
         self.assertEqual(ret, 0)
 
     def test_optional_invalid(self):
@@ -112,6 +125,10 @@ class ParseBooleanTests(unittest.TestCase):
 
     def test_optional(self):
         ret = parsers.parse_optional_boolean(None)
+        self.assertEqual(ret, None)
+
+    def test_optional_empty_string(self):
+        ret = parsers.parse_optional_boolean('')
         self.assertEqual(ret, None)
 
     def test_optional_valid(self):

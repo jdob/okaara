@@ -14,7 +14,13 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 """
-Contains methods suitable for passing to the parse_func parameter of the Option and Flag classes.
+Contains methods suitable for passing to the parse_func parameter of the Option and Flag
+classes.
+
+The parse_optional_* parsers treat both None and the empty string to indicate an omitted value.
+This allows an option to be specified as --count= or --count="" in order to convey the idea of
+null as the value of the command. Okaara will parse both of those as having a value of '' which
+the parse_optional_* methods will translate to None upon parsing.
 """
 
 import csv as csv_module
@@ -57,8 +63,8 @@ def parse_optional_boolean(value):
     :type  value: str, None
     :rtype: bool
     """
-    if value is None:
-        return value
+    if value is None or value.strip() == '':
+        return None
 
     return parse_boolean(value)
 
@@ -89,8 +95,8 @@ def parse_optional_non_negative_int(value):
     :rtype: int
     """
 
-    if value is None:
-        return value
+    if value is None or value.strip() == '':
+        return None
 
     return parse_non_negative_int(value)
 
@@ -120,8 +126,8 @@ def parse_optional_positive_int(value):
     :type  value: str, None
     :rtype: int
     """
-    if value is None:
-        return value
+    if value is None or value.strip() == '':
+        return None
 
     return parse_positive_int(value)
 
@@ -149,7 +155,7 @@ def parse_optional_csv_string(value):
     :type  value: str, None
     :rtype: list
     """
-    if value is None:
-        return value
+    if value is None or value.strip() == '':
+        return None
 
     return parse_csv_string(value)
