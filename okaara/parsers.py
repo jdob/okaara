@@ -14,8 +14,7 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 """
-Contains methods suitable for passing to the parse_func parameter of the Option and Flag
-classes.
+Contains methods suitable for passing to the parse_func parameter of the Option.
 
 The parse_optional_* parsers treat both None and the empty string to indicate an omitted value.
 This allows an option to be specified as --count= or --count="" in order to convey the idea of
