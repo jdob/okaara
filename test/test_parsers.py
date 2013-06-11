@@ -18,7 +18,7 @@ import unittest
 from okaara import parsers
 
 
-class CSVTests(unittest.TestCase):
+class ParseCSVTests(unittest.TestCase):
 
     def test_basic_values(self):
         ret = parsers.parse_csv_string('a,b,c')
@@ -42,6 +42,16 @@ class CSVTests(unittest.TestCase):
     def test_optional_value(self):
         ret = parsers.parse_optional_csv_string('a,b')
         self.assertEqual(ret, ['a', 'b'])
+
+
+class ParseIntTests(unittest.TestCase):
+
+    def test_valid(self):
+        ret = parsers.parse_int('10')
+        self.assertEqual(ret, 10)
+
+    def test_invalid(self):
+        self.assertRaises(ValueError, parsers.parse_int, 'int')
 
 
 class ParsePostiveIntTests(unittest.TestCase):

@@ -54,6 +54,18 @@ def parse_boolean(value):
         raise ValueError(_('invalid boolean value'))
 
 
+def parse_int(value):
+    """
+    Returns the int representation of the given user input, raising the appropriate
+    exception if the user input cannot be parsed.
+
+    :param value: user entered text extracted by the framework
+    :type  value: str
+    :rtype: int
+    """
+    return int(value)
+
+
 def parse_optional_boolean(value):
     """
     Returns the boolean representation of the given user input. This call does not raise an
