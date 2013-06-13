@@ -19,6 +19,8 @@ BuildRequires:  python-setuptools
 BuildRequires:  python-babel
 BuildRequires:  python2-devel
 
+Requires:       python-setuptools
+
 %description
 Python library to facilitate the creation of command-line interfaces.
 
