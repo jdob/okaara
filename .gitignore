@@ -6,3 +6,4 @@ cover
 .idea
 build
 *.sw?
+dist
