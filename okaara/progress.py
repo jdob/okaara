@@ -200,7 +200,7 @@ class Spinner:
 
         :param left_tick: displayed on the left side of the spinner
         :type  left_tick: str
-7
+
         :param right_tick: displayed on the right side of the spinner
         :type  right_tick: str
 
