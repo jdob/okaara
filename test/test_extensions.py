@@ -108,7 +108,7 @@ class DirectoryExtensionsLoader(unittest.TestCase):
 class EntryPointLoaderTests(unittest.TestCase):
 
     @mock.patch('pkg_resources.iter_entry_points')
-    def test_valid_extensions(self, mock_iter):
+    def ___test_valid_extensions(self, mock_iter):
         # Setup
         test_ep_dir = os.path.join(DATA_DIR, 'entry_point_extensions')
         if test_ep_dir not in sys.path:
