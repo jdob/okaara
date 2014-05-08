@@ -749,7 +749,7 @@ class Prompt:
         while True:
 
             try:
-                password_1 = getpass.getpass(question, stream=self.output)
+                password_1 = self._get_password(question, stream=self.output)
             except KeyboardInterrupt:
                 if interruptable:
                     return ABORT
@@ -759,7 +759,7 @@ class Prompt:
                 return password_1
 
             try:
-                password_2 = getpass.getpass(verify_question, stream=self.output)
+                password_2 = self._get_password(verify_question, stream=self.output)
             except KeyboardInterrupt:
                 if interruptable:
                     return ABORT
@@ -770,6 +770,27 @@ class Prompt:
                 self.write('')
             else:
                 return password_1
+
+    def _get_password(self, question):
+        """
+        Gets a password from the user interactively, supporting degraded
+        behavior when called in python 2.4. The degraded behavior is explained
+        in-line below.
+
+        :param question: displayed to the user when prompting for input
+        :type  question: str
+
+        :return:    password that the user entered
+        :rtype:     basestring
+        """
+        try:
+            return getpass.getpass(question, stream=self.output)
+        # In python 2.4, getpass.getpass does not have the "stream" parameter
+        # and thus raises a TypeError for the above call. We will handle that
+        # by simply not passing an argument for it, thus not allowing python
+        # 2.4 users to take advantage of the self.output abstraction.
+        except TypeError:
+            return getpass.getpass(question)
 
     def prompt(self, question, allow_empty=False, interruptable=True):
         """
