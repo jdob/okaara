@@ -15,6 +15,8 @@
 
 import unittest
 
+import mock
+
 import okaara.prompt
 from okaara.prompt import Prompt, Recorder, Script, ABORT
 
@@ -227,3 +229,52 @@ class PromptTest(unittest.TestCase):
         # Verify
         self.assertEqual(0, index)
         self.assertEqual(1, len(script.lines))
+
+
+def fake_py24_getpass(question):
+    """
+    Force the mocked getpass.getpass to behave as it would for python 2.4, in
+    which case "question" is the only parameter allowed.
+    """
+    assert question == 'Password: '
+    return 'letmein'
+
+
+def fake_py26_getpass(question, stream=None):
+    """
+    Force the mocked getpass.getpass to behave as it would for python 2.6+, in
+    which case the "stream" parameter is available for use.
+    """
+    assert question == 'Password: '
+    assert stream is not None
+    return 'letmein'
+
+
+class TestGetPassword(unittest.TestCase):
+    @mock.patch('getpass.getpass')
+    def test_get_password(self, mock_getpass):
+        # Setup
+        mock_getpass.return_value = 'letmein'
+        prompt = Prompt()
+
+        password = prompt._get_password('Password: ')
+
+        self.assertEqual(password, 'letmein')
+        mock_getpass.assert_called_once_with('Password: ', stream=prompt.output)
+
+    @mock.patch('getpass.getpass', new=fake_py24_getpass)
+    def test_py24_behavior(self):
+        prompt = Prompt()
+
+        password = prompt._get_password('Password: ')
+
+        self.assertEqual(password, 'letmein')
+        
+    @mock.patch('getpass.getpass', new=fake_py26_getpass)
+    def test_py26_behavior(self):
+        prompt = Prompt()
+
+        password = prompt._get_password('Password: ')
+
+        self.assertEqual(password, 'letmein')
+
