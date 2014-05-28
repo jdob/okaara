@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.33
+Version:        1.0.34
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -75,6 +75,9 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Wed May 28 2014 Jay Dobies <jason.dobies@redhat.com> 1.0.34-1
+- Added build requirement on python-mock (jason.dobies@redhat.com)
+
 * Wed May 28 2014 Jay Dobies <jason.dobies@redhat.com> 1.0.33-1
 - fixing a bug where prompting for password in python 2.4 caused an error
   (mhrivnak@redhat.com)
