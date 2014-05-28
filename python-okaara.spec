@@ -18,6 +18,7 @@ BuildRequires:  python-nose
 BuildRequires:  python-setuptools
 BuildRequires:  python-babel
 BuildRequires:  python2-devel
+BuildRequires:  python-mock
 
 Requires:       python-setuptools
 
