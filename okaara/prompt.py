@@ -749,7 +749,7 @@ class Prompt:
         while True:
 
             try:
-                password_1 = self._get_password(question, stream=self.output)
+                password_1 = self._get_password(question)
             except KeyboardInterrupt:
                 if interruptable:
                     return ABORT
@@ -759,7 +759,7 @@ class Prompt:
                 return password_1
 
             try:
-                password_2 = self._get_password(verify_question, stream=self.output)
+                password_2 = self._get_password(verify_question)
             except KeyboardInterrupt:
                 if interruptable:
                     return ABORT
