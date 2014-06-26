@@ -164,6 +164,20 @@ class WrapTests(unittest.TestCase):
 
 
 class PromptTest(unittest.TestCase):
+    @mock.patch('getpass.getpass')
+    def test_prompt_password(self, mock_getpass):
+        """
+        Make sure this correctly passes through to getpass one way or another
+        """
+        # Setup
+        mock_getpass.return_value = 'letmein'
+        prompt = Prompt()
+
+        password = prompt.prompt_password('Password: ')
+
+        self.assertEqual(password, 'letmein')
+        self.assertEqual(mock_getpass.call_count, 1)
+        self.assertEqual(mock_getpass.call_args[0][0], 'Password: ')
 
     def test_prompt_no_empty(self):
         """
