@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.34
+Version:        1.0.35
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -75,6 +75,10 @@ rm -rf $RPM_BUILD_ROOT
 # -- changelog ----------------------------------------------------------------
 
 %changelog
+* Thu Jun 26 2014 Jay Dobies <jason.dobies@redhat.com> 1.0.35-1
+- fixing a bug where Prompt.prompt_password passes the wrong arguments to
+  another function. (mhrivnak@redhat.com)
+
 * Wed May 28 2014 Jay Dobies <jason.dobies@redhat.com> 1.0.34-1
 - Added build requirement on python-mock (jason.dobies@redhat.com)
 
