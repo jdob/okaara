@@ -72,7 +72,7 @@ def spinner_demo():
 
     total = 10
     for i in range(0, total):
-        spinner.next()
+        next(spinner)
         time.sleep(.25)
 
     spinner.clear()
@@ -128,7 +128,6 @@ def threaded_spinner_demo():
 
     p.write('Threaded spinner stopped')
     p.write('')
-
 
     s = ThreadedSpinner(p, refresh_seconds=3)
 

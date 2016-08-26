@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License along with Okaara.
 # If not, see <http://www.gnu.org/licenses/>.
+from builtins import object
 
 from gettext import gettext as _
 import logging
@@ -93,16 +94,14 @@ class ExtensionDescriptor(object):
         self.init_method = init_method
         self.priority = priority
 
-    def __cmp__(self, other):
+    def __lt__(self, other):
         """
         Orders by priority first, then ascending by name.
         """
-        result = cmp(self.priority, other.priority)
-        if result != 0:
-            return result
-
-        result = cmp(self.name, other.name)
-        return result
+        if self.priority != other.priority:
+            return self.priority < other.priority
+        else:
+            return self.name < other.name
 
 # -- loaders ------------------------------------------------------------------
 
@@ -148,23 +147,24 @@ class DirectoryExtensionsLoader(BaseExtensionsLoader):
     def _load_extension_descriptor(self, extension_package_name):
 
         # Check for the file's existence first to ease error handling
-        ext_mod_filename = os.path.join(self.extensions_dir, extension_package_name,
-                                         self.init_module_name + '.py')
+        ext_mod_filename = os.path.join(self.extensions_dir,
+                                        extension_package_name,
+                                        self.init_module_name + '.py')
         if not os.path.exists(ext_mod_filename):
-            raise InitializeFileNotFound(ext_mod_filename)
+            raise InitializeFileNotFound
 
         # Figure out the full package name for the module and import it.
         try:
             ext_module = __import__('%s.%s' % (extension_package_name, self.init_module_name))
         except Exception:
-            raise ImportFailed(extension_package_name), None, sys.exc_info()[2]
+            raise ImportFailed(extension_package_name)
 
         # Get a handle on the initialize function
         try:
             init_module = getattr(ext_module, self.init_module_name)
             init_func = getattr(init_module, self.init_function_name)
-        except AttributeError, e:
-            raise NoInitFunction(), None, sys.exc_info()[2]
+        except AttributeError as e:
+            raise NoInitFunction()
 
         # Load the priority
         try:

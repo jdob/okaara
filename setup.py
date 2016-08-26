@@ -10,23 +10,19 @@
 from setuptools import setup, find_packages
 
 setup(
-        name='okaara',
-        version='1.0.35',
-        description='Python command line utilities',
-        url='https://okaara.readthedocs.org/en/latest/',
-        license='GPLv2',
-
-        author='Jay Dobies',
-        author_email='jdobies@gmail.com',
-
-        packages = find_packages(),
-
-        test_suite = 'nose.collector',
-
-        classifiers = [
-            'License :: OSI Approved :: GNU General Public License (GPL)',
-            'Intended Audience :: Developers',
-            'Intended Audience :: Information Technology',
-            'Programming Language :: Python'
-        ],
+    name='okaara',
+    version='1.0.35',
+    description='Python command line utilities',
+    url='https://okaara.readthedocs.org/en/latest/',
+    license='GPLv2',
+    author='Jay Dobies',
+    author_email='jdobies@gmail.com',
+    packages=find_packages(),
+    test_suite='nose.collector',
+    classifiers=[
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Intended Audience :: Developers',
+        'Intended Audience :: Information Technology',
+        'Programming Language :: Python'
+    ],
 )
