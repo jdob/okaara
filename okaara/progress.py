@@ -19,6 +19,10 @@ take a Prompt as the output writer. The caller is responsible the iteration
 and will call the appropriate method in each object to make it display the
 current state.
 """
+from __future__ import division
+from future import standard_library
+standard_library.install_aliases()
+from builtins import object
 
 import math
 import threading
@@ -27,7 +31,7 @@ import time
 import okaara.prompt
 
 
-class ProgressBar:
+class ProgressBar(object):
 
     def __init__(self, prompt, width=40, show_trailing_percentage=True, fill='=', left_tick='[',
                  right_tick=']', in_progress_color=None, completed_color=None, render_tag=None):
@@ -185,7 +189,7 @@ class ProgressBar:
             self.prompt.clear(okaara.prompt.CLEAR_REMAINDER)
 
 
-class Spinner:
+class Spinner(object):
 
     DEFAULT_SEQUENCE = '- \ | /'.split()
 
@@ -283,7 +287,7 @@ class Spinner:
 
         for item in iterable:
             yield item
-            self.next()
+            next(self)
 
     def clear(self):
         """
@@ -383,7 +387,7 @@ class ThreadedSpinner(Spinner):
         self._thread_running = True
 
         while self.running:
-            self.next()
+            next(self)
             time.sleep(self.refresh_seconds)
             self.ellapsed_time += self.refresh_seconds
 

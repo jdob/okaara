@@ -12,6 +12,7 @@
 #
 # You should have received a copy of the GNU General Public License along with Okaara.
 # If not, see <http://www.gnu.org/licenses/>.
+from builtins import object
 
 import gettext
 import logging
@@ -21,7 +22,10 @@ import sys
 from okaara.prompt import Prompt
 
 t = gettext.translation('okaara', fallback=True)
-_ = t.ugettext
+if sys.version_info[0] < 3:
+    _ = t.ugettext
+else:
+    _ = t.gettext
 
 
 LOG = logging.getLogger(__name__)
@@ -33,7 +37,7 @@ class Exit(Exception):
     pass
 
 
-class Shell:
+class Shell(object):
     """
     Represents a single shell interface. A shell constists of one or more screens
     that drive the different sections of the shell. At any given time, only one
@@ -84,7 +88,7 @@ class Shell:
 
         if include_long_triggers:
             home_triggers.append('home')
-            
+
             quit_triggers.append('quit')
             quit_triggers.append('exit')
 
@@ -256,10 +260,10 @@ class Shell:
 
         if clear:
             self.clear_screen()
-                    
+
         self.previous_screen = self.current_screen
         self.current_screen = self.screens[to_screen_id]
-        
+
         if show_menu:
             self.render_menu(display_shell_menu=False)
 
@@ -307,7 +311,7 @@ class Shell:
                 self.prompt.write('')
                 for item in self.ordered_menu_items:
                     self._render_menu_item(', '.join(item.triggers), item.description)
-            
+
         self.prompt.write('')
 
     def _render_menu_item(self, trigger, description):
@@ -328,7 +332,7 @@ class Shell:
         return p
 
 
-class Screen:
+class Screen(object):
     """
     A screen is an individual "section" of a shell. The granularity of its use will
     vary based on the application but can most easily be related to different
@@ -401,7 +405,7 @@ def noop():
     """
     pass
 
-class MenuItem:
+class MenuItem(object):
     """
     An individual menu item the user can interact with. The shell instance will
     take care of determining which menu item the user has selected and invoking
@@ -444,7 +448,7 @@ class MenuItem:
         # Make sure it's in list form
         if not isinstance(triggers, list) and not isinstance(triggers, tuple):
             triggers = [triggers]
-        
+
         self.triggers = triggers
         self.description = description
         self.func = func

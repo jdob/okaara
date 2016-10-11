@@ -12,7 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License along with Okaara.
 # If not, see <http://www.gnu.org/licenses/>.
+from __future__ import division
+from builtins import range
+from builtins import object
 
+from functools import reduce
 import copy
 
 # -- constants ----------------------------------------------------------------
@@ -178,7 +182,7 @@ class Table(object):
                     elif alignment == ALIGN_RIGHT:
                         text = padding + text
                     else:
-                        left_padding_count = (width - len(text)) / 2
+                        left_padding_count = (width - len(text)) // 2
                         right_padding_count = (width - len(text)) - left_padding_count
 
                         left_padding = ' ' * left_padding_count
@@ -231,8 +235,8 @@ class Table(object):
         # If not specified, evenly divide across the table width and throw
         # out any extra space
         if col_widths is None:
-            minus_separators = table_width - ( (self.num_cols - 1) * len(self.col_separator) )
-            each_col_width = minus_separators / self.num_cols
+            minus_separators = table_width - ((self.num_cols - 1) * len(self.col_separator))
+            each_col_width = minus_separators // self.num_cols
             col_widths = [each_col_width for i in range(0, self.num_cols)]
 
         # If the table width is greater than the total width of the columns,

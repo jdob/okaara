@@ -12,7 +12,11 @@
 #
 # You should have received a copy of the GNU General Public License along with Okaara.
 # If not, see <http://www.gnu.org/licenses/>.
+from __future__ import division
+from builtins import str
+from builtins import object
 
+from functools import reduce
 import copy
 import fcntl
 import getpass
@@ -24,7 +28,10 @@ import sys
 import termios
 
 t = gettext.translation('okaara', fallback=True)
-_ = t.ugettext
+if sys.version_info[0] < 3:
+    _ = t.ugettext
+else:
+    _ = t.gettext
 
 # -- constants ----------------------------------------------------------------
 
@@ -81,7 +88,7 @@ TAG_WRITE = 'write'
 
 # -- classes ------------------------------------------------------------------
 
-class Prompt:
+class Prompt(object):
     """
     Used to communicate between the application and the user. The Prompt class can be
     subclassed to provide custom implementations of read and write to alter the input/output
@@ -147,7 +154,7 @@ class Prompt:
         try:
             r = self.input.readline().rstrip() # rstrip removes the trailing \n
             return r
-        except (EOFError, KeyboardInterrupt), e:
+        except (EOFError, KeyboardInterrupt) as e:
             if interruptable:
                 self.write('') # the ^C won't cause a line break but we probably want one
                 return ABORT
@@ -230,7 +237,7 @@ class Prompt:
         if len(text) >= width:
             return text
         else:
-            spacer = ' ' * ( (width - len(text)) / 2)
+            spacer = ' ' * ((width - len(text)) // 2)
             return spacer + text
 
     def wrap(self, content, wrap_width=None, remaining_line_indent=0):
@@ -431,7 +438,7 @@ class Prompt:
 
         if a is ABORT:
             return a
-            
+
         return a.lower() == 'y'
 
     def prompt_range(self, question, high_number, low_number=1, interruptable=True):
@@ -445,7 +452,7 @@ class Prompt:
             if a > high_number or a < low_number:
                 self.write(_('Please enter a number between %d and %d') % (low_number, high_number))
                 continue
-                
+
             return a
 
     def prompt_number(self, question, allow_negatives=False, allow_zero=False, default_value=None, interruptable=True):
@@ -539,7 +546,7 @@ class Prompt:
             elif selection == 'c':
                 return selected_indices
             elif selection == 'a':
-                selected_indices = range(0, len(menu_values))
+                selected_indices = list(range(0, len(menu_values)))
             elif selection == 'n':
                 selected_indices = []
             elif selection == 'b':
@@ -620,7 +627,7 @@ class Prompt:
         for key in section_items:
             selected_index_map[key] = []
 
-        total_item_count = reduce(lambda count, key: count + len(section_items[key]), section_items.keys(), 0)
+        total_item_count = reduce(lambda count, key: count + len(section_items[key]), list(section_items.keys()), 0)
 
         q = _('Enter value (1-%s) to toggle selection, \'c\' to confirm selections, or \'?\' for more commands: ') % total_item_count
 
@@ -672,7 +679,7 @@ class Prompt:
                 # Recreate the selected index map, adding in indices for each item
                 selected_index_map = {}
                 for key in section_items:
-                    selected_index_map[key] = range(0, len(section_items[key]))
+                    selected_index_map[key] = list(range(0, len(section_items[key])))
             elif selection == 'n':
                 selected_index_map = {}
                 for key in section_items:
@@ -874,8 +881,8 @@ class Prompt:
         upper = parsed[1].strip()
 
         return lower.isdigit() and int(lower) > 0 and \
-               upper.isdigit() and int(upper) <= selectable_item_count and \
-               int(lower) < int(upper)
+            upper.isdigit() and int(upper) <= selectable_item_count and \
+            int(lower) < int(upper)
 
     def _range(self, input):
         """
@@ -909,7 +916,7 @@ class Prompt:
 
         self.tags.append(t)
 
-class Recorder:
+class Recorder(object):
     """
     Suitable for passing to the Prompt constructor as the output, an instance
     of this class will store every line written to it in an internal list.
@@ -921,7 +928,7 @@ class Recorder:
     def write(self, line):
         self.lines.append(line)
 
-class Script:
+class Script(object):
     """
     Suitable for passing to the Prompt constructor as the input, an instance
     of this class will return each line set within on each call to read.

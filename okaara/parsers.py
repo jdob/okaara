@@ -154,7 +154,7 @@ def parse_csv_string(value):
     if value is None:
         raise ValueError(_('value is required'))
 
-    return csv_module.reader((value,)).next()
+    return next(csv_module.reader((value,)))
 
 
 def parse_optional_csv_string(value):

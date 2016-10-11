@@ -69,7 +69,7 @@ class ExtensionsManagerTests(unittest.TestCase):
         # Test
         try:
             manager.load()
-        except extensions.LoadFailed, e:
+        except extensions.LoadFailed as e:
             self.assertEqual(1, len(e.failed_descriptors))
             self.assertEqual('sample-bad', e.failed_descriptors[0].name)
 

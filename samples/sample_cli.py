@@ -43,7 +43,7 @@ class SampleSectionOne(Section):
 
     def optional_args(self, **kwargs):
         self.prompt.write('Supplied Arguments:')
-        for k, v in kwargs.items():
+        for k, v in kwargs:
             self.prompt.write('Key: %-10s   Value: %s' % (k, v))
 
 
