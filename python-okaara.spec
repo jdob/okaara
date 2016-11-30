@@ -3,7 +3,7 @@
 # -- headers ------------------------------------------------------------------
 
 Name:           python-okaara
-Version:        1.0.35
+Version:        1.0.37
 Release:        1%{?dist}
 Summary:        Python command line utilities
 
@@ -21,6 +21,7 @@ BuildRequires:  python2-devel
 BuildRequires:  python-mock
 
 Requires:       python-setuptools
+Requires:       python3-future
 
 %description
 Python library to facilitate the creation of command-line interfaces.

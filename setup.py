@@ -11,7 +11,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='okaara',
-    version='1.0.36',
+    version='1.0.37',
     description='Python command line utilities',
     url='https://okaara.readthedocs.org/en/latest/',
     license='GPLv2',
@@ -24,5 +24,8 @@ setup(
         'Intended Audience :: Developers',
         'Intended Audience :: Information Technology',
         'Programming Language :: Python'
+    ],
+    install_requires=[
+        'future',
     ],
 )
